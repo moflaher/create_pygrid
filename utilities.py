@@ -13,6 +13,7 @@ from matplotlib.collections import PolyCollection as PC
 import matplotlib.pyplot as plt
 import matplotlib.tri as mplt
 import collections
+import copy
 
 
 
@@ -93,7 +94,7 @@ def loadnc(datadir, singlename=[], fvcom=True):
     return data
 
 
-def plotcoast(axin,**kwargs):
+def load_coastline(filename):
     """
     Plots the coastline on an ax.
 
@@ -109,27 +110,27 @@ def plotcoast(axin,**kwargs):
         ticksout - Face the axis ticksout  (R style - default False) 
     """
    
-    color='k'
-    lw=1
-    ls='solid'
-    filename='mid_nwatl6c.nc'
-    fcolor='0.75'
-    fill=False
+    #color='k'
+    #lw=1
+    #ls='solid'
+    #filename='mid_nwatl6c.nc'
+    #fcolor='0.75'
+    #fill=False
 
-    if kwargs is not None:
-        for key, value in kwargs.iteritems():            
-            if (key=='color'):
-                color=value
-            if (key=='lw'):
-                lw=value
-            if (key=='ls'):
-                ls=value    
-            if (key=='filename'):
-                filename=value   
-            if (key=='fill'):
-                fill=value 
-            if (key=='fcolor'):
-                fcolor=value
+    #if kwargs is not None:
+        #for key, value in kwargs.iteritems():            
+            #if (key=='color'):
+                #color=value
+            #if (key=='lw'):
+                #lw=value
+            #if (key=='ls'):
+                #ls=value    
+            #if (key=='filename'):
+                #filename=value   
+            #if (key=='fill'):
+                #fill=value 
+            #if (key=='fcolor'):
+                #fcolor=value
 
     #_base_dir = os.path.realpath(inspect.stack()[0][1])
     #idx=_base_dir.rfind('/')
@@ -141,14 +142,16 @@ def plotcoast(axin,**kwargs):
 
     tmparray=[list(zip(sl['lon'][sl['start'][i]:(sl['start'][i]+sl['count'][i])],sl['lat'][sl['start'][i]:(sl['start'][i]+sl['count'][i])])) for i in range(0,len(sl['start']))]
 
-    if fill==True:
-        coastseg=PC(tmparray,facecolor = fcolor,edgecolor=color,linewidths=lw)
-    else:
-        coastseg=LC(tmparray,linewidths = lw,linestyles=ls,color=color)    
+    return np.array(tmparray)
 
-    axin.add_collection(coastseg)
+    #if fill==True:
+        #coastseg=PC(tmparray,facecolor = fcolor,edgecolor=color,linewidths=lw)
+    #else:
+        #coastseg=LC(tmparray,linewidths = lw,linestyles=ls,color=color)    
+
+    #axin.add_collection(coastseg)
     
-    return coastseg
+    #return coastseg
     
     
 def load_neifile(neifilename=None):
@@ -429,3 +432,153 @@ def save_nodfile(data,filename=None):
         fp.write('%f %f\n' % (data[i,0],data[i,1]) )
     
     fp.close()
+
+
+
+def save_segfile(segfile,outfile=None):
+    """
+    Saves a seg file. 
+    """
+
+
+    if outfile==None:
+        print('save_segfile requires a filename to save.')
+        return
+    try:
+        fp=open(outfile,'w')
+    except IOError:
+        print('save_segfile: invalid filename.')
+        return
+
+    for seg in segfile:
+        fp.write('%s %d\n' % (seg,len(segfile[seg]) ) )
+        for i in range(len(segfile[seg])):
+            fp.write('%d %f %f\n' % (i+1,segfile[seg][i,0],segfile[seg][i,1] ) )
+    fp.close()
+
+    return 
+
+
+def save_llz(data,filename=None):
+    """
+    Saves a llz array as a file. Takes an Nx3 array 
+    """
+    
+    if filename==None:
+        print('save_llz requires a filename to save.')
+        return
+    try:
+        fp=open(filename,'w')
+    except IOError:
+        print('Can''t make ' + filename)
+        return
+
+    for i in range(len(data)):
+        fp.write('%f %f %f\n' % (data[i,0],data[i,1],data[i,2] ) )
+
+    fp.close()
+    
+    
+def save_neifile(neifile=None,neifilename=None):
+    """
+    save a .nei file
+
+ 
+    """
+    
+    if neifilename==None:
+        print('savenei requires a filename to save.')
+        return
+    try:
+        fp=open(neifilename,'w')
+    except IOError:
+        print('Can''t make ' + neifilename)
+        return
+
+    if neifile==None:
+        print('No neifile dict given.')
+        return
+
+    fp.write('%d\n' % neifile['nnodes'])
+    fp.write('%d\n' % neifile['maxnei'])
+    fp.write('%f %f %f %f\n' % (neifile['llminmax'][0],neifile['llminmax'][1],neifile['llminmax'][2],neifile['llminmax'][3]))   
+   
+
+    for i in range(0,neifile['nnodes']):
+        fp.write('%d %f %f %d %f %s\n' % (neifile['nodenumber'][i], neifile['nodell'][i,0], neifile['nodell'][i,1], neifile['bcode'][i] ,neifile['h'][i],np.array_str(neifile['neighbours'][i,].astype(int))[1:-1] ) )
+
+    
+    fp.close()
+
+def sort_boundary(neifile,boundary=1):
+
+    nn=copy.deepcopy(neifile['nodenumber'][neifile['bcode']==boundary]).astype(int)
+    nnei=copy.deepcopy(neifile['neighbours'][neifile['bcode']==boundary]).astype(int)
+    
+    #find the neighbour of the first node
+    idx=np.argwhere(nnei==nn[0])[0][0]
+    
+    #have to use temp values with copy as the standard swap doesn't work when things are swapped again and again.
+    #there must be a more python way to hand that....
+    tmpval=nn[1].copy()
+    nn[1]=nn[idx]
+    nn[idx]=tmpval    
+    tmpval=nnei[1,:].copy()
+    nnei[1,:]=nnei[idx,:]
+    nnei[idx,:]=tmpval
+   
+    for i in range(1,len(nn)-1):
+        for j in range(neifile['maxnei']):
+            nei=nnei[i,j]
+            if nei==0: continue
+            idx=np.argwhere(nn[(i+1):]==nei)
+
+            if len(idx)==1:
+                tmpval=nn[(i+1)].copy()
+                nn[(i+1)]=nn[(idx+i+1)]
+                nn[(idx+i+1)]=tmpval                
+                tmpval=nnei[(i+1),:].copy()
+                nnei[(i+1),:]=nnei[(idx+i+1),:]
+                nnei[(idx+i+1),:]=tmpval
+                break
+                
+                
+    nn=np.hstack([nn,nn[0]])
+    
+    return nn
+
+
+def save_nod2polyfile(segfile,filename=None,bnum=[]):
+    """
+    Save a nod2poly file from a nod2poly dict. 
+    """
+    
+    if filename==None:
+        print('save_nodfile requires a filename to save.')
+        return
+    try:
+        fp=open(filename,'w')
+    except IOError:
+        print('save_nod2polyfile: invalid filename.')
+        return data
+
+    dictlen=0
+    for key in segfile.keys():
+        dictlen+=len(segfile[key])
+
+
+    fp.write('%d\n' % dictlen )
+    if bnum==[]:
+        fp.write('%d\n' % len(segfile.keys()) )
+    else:
+        fp.write('%d\n' % bnum )
+
+    for key in segfile.keys():
+        fp.write('%d\n'% len(segfile[key]))
+        for i in range(len(segfile[key])):
+            fp.write('%f %f %f\n'% (segfile[key][i,0],segfile[key][i,1],0.0))
+
+    fp.close()
+
+   
+    return 
