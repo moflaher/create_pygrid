@@ -400,12 +400,12 @@ class New_Toplevel_1:
         self.Label4 = Label(self.Frame2)
         self.Label4.place(relx=0.5, rely=0.65, relheight=0.045, relwidth=.4)
         self.Label4.configure(activebackground="#f9f9f9")
-        self.Label4.configure(text='''Average depth''')
+        self.Label4.configure(text='''Avg. depth''')
         
         self.Button11 = Button(self.Frame2)
         self.Button11.place(relx=0.075, rely=0.70, relheight=0.045, relwidth=.4)
         self.Button11.configure(activebackground="#d9d9d9")
-        self.Button11.configure(text='''Average depth''')
+        self.Button11.configure(text='''Avg. depth''')
         self.Button11.configure(command=pygrid_support.avg_depth)
         
         self.Entry4 = Entry(self.Frame2)
