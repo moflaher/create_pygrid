@@ -237,13 +237,21 @@ class New_Toplevel_1:
                 foreground="#000000",
                 label="About")
                 
+
+             
+        ########################################################################
+        #
+        #   Checkboxes
+        #
+        ########################################################################    
+                
+                
         self.Frame3 = Frame(top)
         self.Frame3.place(relx=0.0, rely=0.0, relheight=0.07, relwidth=0.78)
         self.Frame3.configure(relief=GROOVE)
         self.Frame3.configure(borderwidth="2")
         self.Frame3.configure(relief=GROOVE)
         self.Frame3.configure(width=805)
-
 
         self.Checkbutton1 = Checkbutton(self.Frame3)
         self.Checkbutton1.place(relx=0.01, rely=0.04, relheight=0.91, relwidth=0.15)
@@ -300,158 +308,230 @@ class New_Toplevel_1:
         self.Checkbutton6.configure(command=pygrid_support.toggle_neifiledepth)
         self.Checkbutton6.configure(variable=self.CB6var)
 
-        self.Frame2 = Frame(top)
-        self.Frame2.place(relx=0.79, rely=0.0, relheight=0.85, relwidth=0.21)
+
+        ########################################################################
+        #
+        #   Make notebook
+        #
+        ######################################################################
+
+        self.nb = ttk.Notebook(top)        
+        
+        self.Frame2 = Frame(self.nb)
+        self.Frame2.place(relx=0.78, rely=0.0, relheight=0.75, relwidth=0.22)
         self.Frame2.configure(relief=GROOVE)
         self.Frame2.configure(borderwidth="2")
         self.Frame2.configure(relief=GROOVE)
         self.Frame2.configure(width=215)
+        
+        self.Frame5 = Frame(self.nb)
+        self.Frame5.place(relx=0.78, rely=0.0, relheight=0.75, relwidth=0.22)
+        self.Frame5.configure(relief=GROOVE)
+        self.Frame5.configure(borderwidth="2")
+        self.Frame5.configure(relief=GROOVE)
+        self.Frame5.configure(width=215)
+        
+        
+        
+        self.nb.add(self.Frame2, text='Nodes')
+        self.nb.add(self.Frame5, text='Depth')
+
+        self.nb.place(relx=0.78, rely=0, relheight=0.75, relwidth=0.22)
+        
+        
+        
+        rh = 0.055
+        rw = 0.85
+        rw2 = 0.4        
+        sh = 0.06
+        
+        ########################################################################
+        #
+        #   Node Tab
+        #
+        ########################################################################
+
+        ry = 0.01
 
         self.Label1 = Label(self.Frame2)
-        self.Label1.place(relx=0.075, rely=0.01, relheight=0.045, relwidth=.4)
+        self.Label1.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw2)
         self.Label1.configure(activebackground="#f9f9f9")
         self.Label1.configure(text='''Set resolution''')
 
         self.Entry1 = Entry(self.Frame2)
-        self.Entry1.place(relx=0.525, rely=0.01, relheight=0.045, relwidth=.4)
+        self.Entry1.place(relx=0.525, rely=ry, relheight=rh, relwidth=rw2)
         self.Entry1.configure(background="white")
         self.Entry1.configure(font="TkFixedFont")
         self.Entry1.configure(selectbackground="#c4c4c4")
 
-        self.Button1 = Button(self.Frame2)
-        self.Button1.place(relx=0.075, rely=0.06, relheight=0.045, relwidth=.85)
-        self.Button1.configure(activebackground="#d9d9d9")
-        self.Button1.configure(text='''Clear Selection''')
-        self.Button1.configure(command=pygrid_support.clear_selection)
-        
-        self.Button2 = Button(self.Frame2)
-        self.Button2.place(relx=0.075, rely=0.11, relheight=0.045, relwidth=.85)
-        self.Button2.configure(activebackground="#d9d9d9")
-        self.Button2.configure(text='''Select Area''')
-        self.Button2.configure(command=pygrid_support.select_area)
-
+        ry += sh
         self.Button3 = Button(self.Frame2)
-        self.Button3.place(relx=0.075, rely=0.16, relheight=0.045, relwidth=.85)
+        self.Button3.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
         self.Button3.configure(activebackground="#d9d9d9")
         self.Button3.configure(text='''Spray Area''')
         self.Button3.configure(command=pygrid_support.spray_area)
+        
     
-        self.Button4 = Button(self.Frame2)
-        self.Button4.place(relx=0.075, rely=0.21, relheight=0.045, relwidth=.85)
-        self.Button4.configure(activebackground="#d9d9d9")
-        self.Button4.configure(text='''Remove Area''')
-        self.Button4.configure(command=pygrid_support.remove_area)
+        #self.Button4 = Button(self.Frame2)
+        #self.Button4.place(relx=0.075, rely=0.21, relheight=rh, relwidth=rw)
+        #self.Button4.configure(activebackground="#d9d9d9")
+        #self.Button4.configure(text='''Remove Area''')
+        #self.Button4.configure(command=pygrid_support.remove_area)
 
+        ry += sh
         self.Button5 = Button(self.Frame2)
-        self.Button5.place(relx=0.075, rely=0.26, relheight=0.045, relwidth=.4)
+        self.Button5.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw2)
         self.Button5.configure(activebackground="#d9d9d9")
         self.Button5.configure(text='''Select Seg''')
         self.Button5.configure(command=pygrid_support.select_seg)
         
         self.Entry2 = Entry(self.Frame2)
-        self.Entry2.place(relx=0.525, rely=0.26, relheight=0.045, relwidth=.4)
+        self.Entry2.place(relx=0.525, rely=ry, relheight=rh, relwidth=rw2)
         self.Entry2.configure(background="white")
         self.Entry2.configure(font="TkFixedFont")
         self.Entry2.configure(selectbackground="#c4c4c4")
         
+        ry += sh
         self.Button6 = Button(self.Frame2)
-        self.Button6.place(relx=0.075, rely=0.31, relheight=0.045, relwidth=.85)
+        self.Button6.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
         self.Button6.configure(activebackground="#d9d9d9")
         self.Button6.configure(text='''Remove nodes inside seg''')
         self.Button6.configure(command=pygrid_support.remove_nodeseg_in)
         
+        ry += sh
         self.Button7 = Button(self.Frame2)
-        self.Button7.place(relx=0.075, rely=0.36, relheight=0.045, relwidth=.85)
+        self.Button7.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
         self.Button7.configure(activebackground="#d9d9d9")
         self.Button7.configure(text='''Remove nodes outside seg''')
         self.Button7.configure(command=pygrid_support.remove_nodeseg_out)
 
+        ry += sh
         self.Button8 = Button(self.Frame2)
-        self.Button8.place(relx=0.075, rely=0.41, relheight=0.045, relwidth=.85)
+        self.Button8.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
         self.Button8.configure(activebackground="#d9d9d9")
         self.Button8.configure(text='''Extract nod from nei''')
         self.Button8.configure(command=pygrid_support.extract_nod)
         
+        ry += sh
         self.Button9 = Button(self.Frame2)
-        self.Button9.place(relx=0.075, rely=0.46, relheight=0.045, relwidth=.85)
+        self.Button9.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
         self.Button9.configure(activebackground="#d9d9d9")
         self.Button9.configure(text='''Extract seg from nei''')
         self.Button9.configure(command=pygrid_support.extract_seg)
         
         
-        self.Label3 = Label(self.Frame2)
-        self.Label3.place(relx=0.5, rely=0.55, relheight=0.045, relwidth=.4)
+        ########################################################################
+        #
+        #   Depth tab
+        #
+        ########################################################################
+        
+        ry = 0.01
+        
+
+        self.Label3 = Label(self.Frame5)
+        self.Label3.place(relx=0.5, rely=ry, relheight=rh, relwidth=rw2)
         self.Label3.configure(activebackground="#f9f9f9")
         self.Label3.configure(text='''Set depth''')
         
-        self.Button10 = Button(self.Frame2)
-        self.Button10.place(relx=0.075, rely=0.60, relheight=0.045, relwidth=.4)
+        self.Button10 = Button(self.Frame5)
+        self.Button10.place(relx=0.075, rely=ry+0.05, relheight=rh, relwidth=rw2)
         self.Button10.configure(activebackground="#d9d9d9")
         self.Button10.configure(text='''Set depth''')
         self.Button10.configure(command=pygrid_support.set_depth)
         
-        self.Entry3 = Entry(self.Frame2)
-        self.Entry3.place(relx=0.525, rely=0.60, relheight=0.045, relwidth=.4)
+        self.Entry3 = Entry(self.Frame5)
+        self.Entry3.place(relx=0.525, rely=ry+0.05, relheight=rh, relwidth=rw2)
         self.Entry3.configure(background="white")
         self.Entry3.configure(font="TkFixedFont")
         self.Entry3.configure(selectbackground="#c4c4c4")
         
-        
-        self.Label4 = Label(self.Frame2)
-        self.Label4.place(relx=0.5, rely=0.65, relheight=0.045, relwidth=.4)
+        ry += 2*sh
+        self.Label4 = Label(self.Frame5)
+        self.Label4.place(relx=0.5, rely=ry, relheight=rh, relwidth=rw2)
         self.Label4.configure(activebackground="#f9f9f9")
         self.Label4.configure(text='''Avg. depth''')
         
-        self.Button11 = Button(self.Frame2)
-        self.Button11.place(relx=0.075, rely=0.70, relheight=0.045, relwidth=.4)
+        self.Button11 = Button(self.Frame5)
+        self.Button11.place(relx=0.075, rely=ry+0.05, relheight=rh, relwidth=rw2)
         self.Button11.configure(activebackground="#d9d9d9")
         self.Button11.configure(text='''Avg. depth''')
         self.Button11.configure(command=pygrid_support.avg_depth)
         
-        self.Entry4 = Entry(self.Frame2)
-        self.Entry4.place(relx=0.525, rely=0.70, relheight=0.045, relwidth=.4)
+        self.Entry4 = Entry(self.Frame5)
+        self.Entry4.place(relx=0.525, rely=ry+0.05, relheight=rh, relwidth=rw2)
         self.Entry4.configure(background="white")
         self.Entry4.configure(font="TkFixedFont")
         self.Entry4.configure(selectbackground="#c4c4c4")
         
+        ########################################################################
+        #
+        #   Selection controls
+        #
+        ########################################################################
+        
+        self.FrameSelection = Frame(top)
+        self.FrameSelection.place(relx=0.78, rely=0.75, relheight=.1, relwidth=0.22)
+        self.FrameSelection.configure(relief=GROOVE)
+        self.FrameSelection.configure(borderwidth="2")
+        self.FrameSelection.configure(relief=GROOVE)
+        self.FrameSelection.configure(width=215)
+        
+        self.Button1 = Button(self.FrameSelection)
+        self.Button1.place(relx=0.05, rely=0.075, relheight=0.4, relwidth=rw)
+        self.Button1.configure(activebackground="#d9d9d9")
+        self.Button1.configure(text='''Clear Selection''')
+        self.Button1.configure(command=pygrid_support.clear_selection)
+        
+        self.Button2 = Button(self.FrameSelection)
+        self.Button2.place(relx=0.05, rely=0.525, relheight=0.4, relwidth=rw)
+        self.Button2.configure(activebackground="#d9d9d9")
+        self.Button2.configure(text='''Select Area''')
+        self.Button2.configure(command=pygrid_support.select_area)
+        
+        ########################################################################
+        #
+        #   Colorbar controls
+        #
+        ########################################################################
         
         self.Frame4 = Frame(top)
-        self.Frame4.place(relx=0.79, rely=0.85, relheight=.15, relwidth=0.21)
+        self.Frame4.place(relx=0.78, rely=0.85, relheight=.15, relwidth=0.22)
         self.Frame4.configure(relief=GROOVE)
         self.Frame4.configure(borderwidth="2")
         self.Frame4.configure(relief=GROOVE)
         self.Frame4.configure(width=215)
         
         self.Label41 = Label(self.Frame4)
-        self.Label41.place(relx=0.05, rely=0.03, relheight=0.255, relwidth=.4)
+        self.Label41.place(relx=0.05, rely=0.03, relheight=0.255, relwidth=rw2)
         self.Label41.configure(activebackground="#f9f9f9")
         self.Label41.configure(text='''Max''')
         
         self.Entry41 = Entry(self.Frame4)
-        self.Entry41.place(relx=0.525, rely=0.03, relheight=0.255, relwidth=.4)
+        self.Entry41.place(relx=0.525, rely=0.03, relheight=0.255, relwidth=rw2)
         self.Entry41.configure(background="white")
         self.Entry41.configure(font="TkFixedFont")
         self.Entry41.configure(selectbackground="#c4c4c4")
         
         self.Label42 = Label(self.Frame4)
-        self.Label42.place(relx=0.05, rely=0.33, relheight=0.255, relwidth=.4)
+        self.Label42.place(relx=0.05, rely=0.33, relheight=0.255, relwidth=rw2)
         self.Label42.configure(activebackground="#f9f9f9")
         self.Label42.configure(text='''Min''')
         
         self.Entry42 = Entry(self.Frame4)
-        self.Entry42.place(relx=0.525, rely=0.33, relheight=0.255, relwidth=.4)
+        self.Entry42.place(relx=0.525, rely=0.33, relheight=0.255, relwidth=rw2)
         self.Entry42.configure(background="white")
         self.Entry42.configure(font="TkFixedFont")
         self.Entry42.configure(selectbackground="#c4c4c4")
         
         self.Button40 = Button(self.Frame4)
-        self.Button40.place(relx=0.075, rely=0.66, relheight=0.255, relwidth=.4)
+        self.Button40.place(relx=0.075, rely=0.66, relheight=0.255, relwidth=rw2)
         self.Button40.configure(activebackground="#d9d9d9")
         self.Button40.configure(text='''Redraw llz''')
         self.Button40.configure(command=pygrid_support.redraw_llz)
         
         self.Button40 = Button(self.Frame4)
-        self.Button40.place(relx=0.525, rely=0.66, relheight=0.255, relwidth=.4)
+        self.Button40.place(relx=0.525, rely=0.66, relheight=0.255, relwidth=rw2)
         self.Button40.configure(activebackground="#d9d9d9")
         self.Button40.configure(text='''Redraw nei''')
         self.Button40.configure(command=pygrid_support.redraw_nei)
