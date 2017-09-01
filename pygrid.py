@@ -18,6 +18,8 @@ except ImportError:
     py3 = 1
 
 import pygrid_support
+import matplotlib as mpl
+mpl.rcParams['agg.path.chunksize'] = 10000
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
@@ -44,6 +46,9 @@ def vp_start_gui():
             root.after(100, pygrid_support.nodfile(filename,True))
         if filename[-3:]=='dat':
             root.after(100, pygrid_support.llzfile(filename,True))
+        root.after(100, pygrid_support.set_initdir(filename[:filename.rfind('/')]))
+    else:
+        root.after(100, pygrid_support.set_initdir('.'))
     root.mainloop()
 
 w = None
@@ -303,11 +308,17 @@ class New_Toplevel_1:
         self.Checkbutton6.place(relx=0.70, rely=0.04, relheight=0.91, relwidth=0.15)
         self.Checkbutton6.configure(activebackground="#d9d9d9")
         self.Checkbutton6.configure(justify=LEFT)
-        self.Checkbutton6.configure(text='''Show nei depth''')
+        self.Checkbutton6.configure(text='''Show nei color''')
         self.CB6var=IntVar()
-        self.Checkbutton6.configure(command=pygrid_support.toggle_neifiledepth)
+        self.Checkbutton6.configure(command=pygrid_support.toggle_neifilecolor)
         self.Checkbutton6.configure(variable=self.CB6var)
-
+        
+        self.NeiMenuVar = StringVar(root)
+        self.NeiChoices={'Depth','dhh','Sidelength'}
+        self.NeiMenuVar.set('Depth')
+        self.NeiMenu = OptionMenu(self.Frame3,self.NeiMenuVar,*self.NeiChoices)
+        self.NeiMenu.place(relx=0.850, rely=0.04, relheight=0.91, relwidth=0.15)
+        self.NeiMenuVar.trace('w', pygrid_support.change_neimenu)
 
         ########################################################################
         #
@@ -428,7 +439,46 @@ class New_Toplevel_1:
         
         ry = 0.01
         
+        self.Labelmin = Label(self.Frame5)
+        self.Labelmin.place(relx=0.1, rely=ry, relheight=rh, relwidth=.2)
+        self.Labelmin.configure(activebackground="#f9f9f9")
+        self.Labelmin.configure(text='''Min''')
+        
+        self.Labelmax = Label(self.Frame5)
+        self.Labelmax.place(relx=0.375, rely=ry, relheight=rh, relwidth=.2)
+        self.Labelmax.configure(activebackground="#f9f9f9")
+        self.Labelmax.configure(text='''Max''')
+        
+        self.Labelmean = Label(self.Frame5)
+        self.Labelmean.place(relx=0.66, rely=ry, relheight=rh, relwidth=.2)
+        self.Labelmean.configure(activebackground="#f9f9f9")
+        self.Labelmean.configure(text='''Mean''')  
+        
+        ry += sh
+        
+        self.Labelsmin = Label(self.Frame5)
+        self.Labelsmin.place(relx=0.1, rely=ry, relheight=rh, relwidth=.2)
+        self.Labelsmin.configure(activebackground="#f9f9f9")
+        self.Labelsmin.configure(text='''na''')
+        
+        self.Labelsmax = Label(self.Frame5)
+        self.Labelsmax.place(relx=0.375, rely=ry, relheight=rh, relwidth=.2)
+        self.Labelsmax.configure(activebackground="#f9f9f9")
+        self.Labelsmax.configure(text='''na''')
+        
+        self.Labelsmean = Label(self.Frame5)
+        self.Labelsmean.place(relx=0.66, rely=ry, relheight=rh, relwidth=.2)
+        self.Labelsmean.configure(activebackground="#f9f9f9")
+        self.Labelsmean.configure(text='''na''')   
+        
+        self.Button10 = Button(self.Frame5)
+        self.Button10.place(relx=0.075, rely=ry+0.05, relheight=rh, relwidth=rw)
+        self.Button10.configure(activebackground="#d9d9d9")
+        self.Button10.configure(text='''Calc Stats''')
+        self.Button10.configure(command=pygrid_support.calc_stats)     
 
+        ry += 2*sh
+        
         self.Label3 = Label(self.Frame5)
         self.Label3.place(relx=0.5, rely=ry, relheight=rh, relwidth=rw2)
         self.Label3.configure(activebackground="#f9f9f9")

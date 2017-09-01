@@ -582,3 +582,50 @@ def save_nod2polyfile(segfile,filename=None,bnum=[]):
 
    
     return 
+
+
+def get_sidelength(data):
+    """
+        Takes an FVCOM dictionary and returns it with the average element sidelength added.
+    """
+    sl=np.zeros([len(data['nv']),])
+    sidemin=np.zeros([len(data['nv']),])+100000000
+    sidemax=np.zeros([len(data['nv']),])
+    
+    for i in range(0,len(data['nv'])):
+        slmin=0
+        for j in range(3):
+            slmin=np.sqrt((data['nodexy'][data['nv'][i,j-1],0]-data['nodexy'][data['nv'][i,j],0])**2+(data['nodexy'][data['nv'][i,j-1],1]-data['nodexy'][data['nv'][i,j],1])**2)+slmin
+            sidemin[i]=np.min([np.sqrt((data['nodexy'][data['nv'][i,j-1],0]-data['nodexy'][data['nv'][i,j],0])**2+(data['nodexy'][data['nv'][i,j-1],1]-data['nodexy'][data['nv'][i,j],1])**2),sidemin[i]])
+            sidemax[i]=np.max([np.sqrt((data['nodexy'][data['nv'][i,j-1],0]-data['nodexy'][data['nv'][i,j],0])**2+(data['nodexy'][data['nv'][i,j-1],1]-data['nodexy'][data['nv'][i,j],1])**2),sidemax[i]])
+        sl[i]=slmin/3
+        
+    data['sl']=sl
+    data['slmin']=sidemin
+    data['slmax']=sidemax
+    
+    return data
+ 
+    
+def get_dhh(data):
+    dh=np.zeros([len(data['nv']),])
+    for i in range(0,len(data['nv'])):
+        one=data['h'][data['nv'][i,0]]
+        two=data['h'][data['nv'][i,1]]
+        three=data['h'][data['nv'][i,2]]
+        hmin=np.min([one,two,three])
+        
+        #control points close to zero to avoid division by small numbers
+        if ((hmin>=0) and (hmin < 1)):
+            hmin=1
+        if ((hmin<0) and (hmin > -1)):
+            hmin=-1
+        
+        first=np.fabs(np.fabs(one-two)/hmin)
+        second=np.fabs(np.fabs(two-three)/hmin)
+        thrid=np.fabs(np.fabs(three-one)/hmin)
+	
+        dh[i]=np.max([first,second,thrid]);
+            
+    data['dhh']=dh
+    return data

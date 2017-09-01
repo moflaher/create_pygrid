@@ -33,6 +33,12 @@ def TODO():
     print('pygrid_support.TODO')
     sys.stdout.flush()    
     
+ 
+########################################################################
+#
+#   selection code
+#
+########################################################################      
 def clear_selection():
     
     if not hasattr(w,'haveArea'):
@@ -54,7 +60,6 @@ def clear_selection():
         
 def select_area():   
     
-    
     def onclick_handler1(event):
         draw=False
         if event.button==1:
@@ -72,9 +77,6 @@ def select_area():
             w.contains=w.path.contains_points 
         else:
             print('Unknown button')
-            
-        
-
         
         if draw:   
             if w.haveArea:
@@ -85,18 +87,22 @@ def select_area():
             w.haveArea=True
             
         return
-            
-                       
+              
     
     clear_selection()
         
     w.areaVec=np.array([0,0])
     w.areaPts=0
     
-    w.cid = w.Canvas1.mpl_connect('button_press_event',onclick_handler1)   
+    w.cid = w.Canvas1.mpl_connect('button_press_event',onclick_handler1)  
+    
+    return 
 
-
-
+########################################################################
+#
+#   node code
+#
+######################################################################## 
 def spray_area():
     if w.Entry1.get()=='':
         return
@@ -135,12 +141,17 @@ def spray_area():
     
     _plot_nodfile()
         
-        
+ 
+########################################################################
+#
+#   depth code
+#
+########################################################################
 def set_depth():
     if w.Entry3.get()=='':
         return
     else:
-        depth=int(w.Entry3.get())
+        depth=float(w.Entry3.get())
     if not hasattr(w,'areaVec'):
         return
     if not hasattr(w,'contains'):
@@ -158,7 +169,7 @@ def avg_depth():
     if w.Entry4.get()=='':
         return
     else:
-        depth=int(w.Entry4.get())
+        depth=float(w.Entry4.get())
     if not hasattr(w,'areaVec'):
         return
     if not hasattr(w,'contains'):
@@ -172,422 +183,27 @@ def avg_depth():
         _plot_neifiledepth()
 
     
-def remove_area():
-    print('pygrid_support.TODO')
-    sys.stdout.flush()
+def calc_stats():
+    if not hasattr(w,'areaVec'):
+        return
+    if not hasattr(w,'contains'):
+        return    
     
-def load_coastline():
-    """
-    Load and plot a coastline.
-    """
-    filename=''
-    filename=askopenfilename()
-    if filename != '':
-        w.coastline=ut.load_coastline(filename=filename)
-        w.coastlineTF=True
-        w.CB1var.set(1)
+    if hasattr(w,'neifile'):
+        idx_vec=w.contains(w.neifile['nodell'])
+        h=w.neifile['h'][idx_vec]
+        #print(dir( w.Labelsmin))
+        w.Labelsmin['text']="{:.2f}".format(h.min())
+        w.Labelsmax['text']="{:.2f}".format(h.max())
+        w.Labelsmean['text']="{:.2f}".format(h.mean())
         
-        #Reduce number of segments - helps but not enough
-        #axis=[-68.5,-64,44,46.5]
-        #yep=[]
-        
-        #def isin(axis,line):
-            #return ((line[:,0]>=axis[0]) & (line[:,0]<=axis[1]) & (line[:,1]>=axis[2]) & (line[:,1]<=axis[3])).sum()
-            
-            
-        #for i,line in enumerate(w.coastline):
-            #if isin(axis,np.array(line)):
-                #yep+=[i]
-        
-        
-        w.coastlineFIG=PC(w.coastline,facecolor = '0.75',edgecolor='k',linewidths=1) 
-        w.ax.add_collection(w.coastlineFIG)
-        w.figure.canvas.draw()
-            
-    return
-
-def load_neifile():
-    """
-    Load and plot an neifile.
-    """
-    filename=''
-    filename=askopenfilename()
-    
-    neifile(filename)
-            
-    return
-    
-def neifile(filename = '', axis=False):
-    """
-    Load and plot an neifile for command line.
-    """
-    if filename != '':
-        w.neifile=ut.load_nei2fvcom(filename)
-        w.neifileFIG=w.ax.triplot(w.neifile['trigrid'],color='k',lw=.25)
-        if axis:
-            w.ax.axis([w.neifile['lon'].min(),w.neifile['lon'].max(),w.neifile['lat'].min(),w.neifile['lat'].max()])
-        w.neifileTF=True
-        w.neifiledepthTF=False
-        w.CB3var.set(1)
-        w.figure.canvas.draw()
-            
-    return
-    
-def load_segfile():
-    """
-    Load and plot an segfile.
-    """
-    filename=''
-    filename=askopenfilename()
-    
-    segfile(filename)
-            
-    return
-    
-def segfile(filename='', axis=False):
-    """
-    Load and plot an segfile for command line.
-    """
-
-    if filename != '':
-        w.segfile=ut.load_segfile(filename)
-        _plot_segfile()
-        if axis:
-            x=np.array([val for seg in w.segfile for val in w.segfile[seg][:,0]])
-            y=np.array([val for seg in w.segfile for val in w.segfile[seg][:,1]])
-            w.ax.axis([x.min(),x.max(),y.min(),y.max()]) 
-        w.segfileTF=True
-        w.CB2var.set(1)
-        w.figure.canvas.draw()
-            
-    return
-    
-def load_llzfile():
-    """
-    Load and plot an llzfile.
-    """
-    filename=''
-    filename=askopenfilename()
-    
-    llzfile(filename)
-            
-    return
-    
-def llzfile(filename = '' , axis=False):
-    """
-    Load and plot an llzfile.
-    """
-
-    if filename != '':
-        w.llzfile=ut.load_llzfile(filename)
-        
-        if w.llzfile.shape[1]==2:
-            del w.llzfile
-            nodfile(filename,True)
-            return
-        
-        _plot_llzfile()
-
-        w.cax.set_visible(True)
-        if axis:
-            w.ax.axis([w.llzfile[:,0].min(),w.llzfile[:,0].max(),w.llzfile[:,1].min(),w.llzfile[:,1].max()])        
-        w.llzfileTF=True
-        w.caxTF=True
-        w.CB5var.set(1)
-        w.figure.canvas.draw()
-            
-    return
-    
-def load_nodfile():
-    """
-    Load and plot an nodfile.
-    **lots of different format for "nod" files this one is just ll**
-    """
-    filename=''
-    filename=askopenfilename()
-
-    nodfile(filename)
-            
-    return
-    
-    
-def nodfile(filename = '', axis=False):
-    """
-    Load and plot an nodfile.
-    **lots of different format for "nod" files this one is just ll**
-    """
-
-    if filename != '':
-        w.nodfile=ut.load_llzfile(filename)
-        _plot_nodfile()
-        if axis:
-            w.ax.axis([w.nodfile[:,0].min(),w.nodfile[:,0].max(),w.nodfile[:,1].min(),w.nodfile[:,1].max()])
-        w.nodfileTF=True
-        w.CB4var.set(1)
-        w.figure.canvas.draw()
-            
-    return
-    
-def _plot_nodfile():
-  
-    if hasattr(w,'nodfileFIG'):
-        w.nodfileFIG.remove()        
-       
-    w.nodfileFIG=w.ax.scatter(w.nodfile[:,0], w.nodfile[:,1], c='g',edgecolor='None')
-    w.figure.canvas.draw()
-
-    return
- 
-def _plot_segfile():
-  
-    if hasattr(w,'segfileFIG'):
-        w.segfileFIG[0].remove()
-        w.segfileFIG[1][0].remove()
-
-    
-    ptarray=np.hstack([[w.segfile[seg][:,0],w.segfile[seg][:,1]] for seg in w.segfile]).T
-    tmparray=[list(zip(w.segfile[seg][:,0],w.segfile[seg][:,1])) for seg in w.segfile]
-    w.linecollection=LC(tmparray,color='b')
-    w.segfileFIG=[w.linecollection,
-                  w.ax.plot(ptarray[:,0],ptarray[:,1],'b.')]
-    w.ax.add_collection(w.linecollection)
-    
-    w.figure.canvas.draw()
-
-    return
-    
-def _plot_llzfile():
-  
-    state = True
-    if hasattr(w,'llzfileFIG'):
-        w.llzfileFIG.remove()
-        state = w.llzfileTF
-
-    cmin, cmax = getcb(w.llzfile[:,2])    
-    w.llzfileFIG=w.ax.scatter(w.llzfile[:,0], w.llzfile[:,1], c=w.llzfile[:,2],edgecolor='None',vmin=cmin,vmax=cmax,visible=state)
-    w.cb=w.figure.colorbar(w.llzfileFIG,cax=w.cax)
-    
-    w.figure.canvas.draw()
-
-    return
-    
-def _plot_neifiledepth():
-  
-    state = True
-    if hasattr(w,'neifiledepthFIG'):
-        w.neifiledepthFIG.remove()
-        state = w.neifiledepthTF
-
-    cmin, cmax = getcb(w.neifile['h'])    
-    w.neifiledepthFIG=w.ax.tripcolor(w.neifile['trigrid'], w.neifile['h'],vmin=cmin,vmax=cmax,visible=state)
-    w.cb=w.figure.colorbar(w.neifiledepthFIG,cax=w.cax)
-
-    w.figure.canvas.draw()
-
-    return
-    
-    
-def toggle_coastline():
-    """
-    Toggle coastline
-    """
-    
-    try:
-        if w.coastlineTF:
-            w.coastlineFIG.set_visible(False)
-            w.coastlineTF=False
-        else:
-            w.coastlineFIG.set_visible(True)
-            w.coastlineTF=True
-            
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB1var.set(0)    
-    
-    return
-    
-def toggle_segfile():
-    """
-    Toggle segfile
-    """
-    
-    try:
-        if w.segfileTF:
-            w.segfileFIG[0].set_visible(False)
-            w.segfileFIG[1][0].set_visible(False)
-            w.segfileTF=False
-        else:
-            w.segfileFIG[0].set_visible(True)
-            w.segfileFIG[1][0].set_visible(True)
-            w.segfileTF=True
-            
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB2var.set(0)    
-    
-    return
-    
-def toggle_neifile():
-    """
-    Toggle neifile
-    """
-    
-    try:
-        if w.neifileTF:
-            w.neifileFIG[0].set_visible(False)
-            w.neifileFIG[1].set_visible(False)
-            w.neifileTF=False
-        else:
-            w.neifileFIG[0].set_visible(True)
-            w.neifileFIG[1].set_visible(True)
-            w.neifileTF=True
-            
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB3var.set(0)    
-    
-    return
-    
-def toggle_neifiledepth():
-    """
-    Toggle neifile depth
-    """
-    
-    try:
-        if w.neifiledepthTF:
-            w.neifiledepthFIG.set_visible(False)
-            w.neifiledepthTF=False
-            w.cax.set_visible(False)
-            w.caxTF=False
-        else:
-            if not hasattr(w,'neifiledepthFIG'):
-                _plot_neifiledepth()   
-            w.neifiledepthFIG.set_visible(True)
-            w.neifiledepthTF=True
-            w.cax.set_visible(True)
-            w.caxTF=True
-            
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB6var.set(0)    
-    
-    return
-    
-def toggle_nodfile():
-    """
-    Toggle nodfile
-    """
-
-    try:
-        if w.nodfileTF:
-            w.nodfileFIG.set_visible(False)
-            w.nodfileTF=False
-        else:
-            w.nodfileFIG.set_visible(True)
-            w.nodfileTF=True
-            
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB4var.set(0)    
-    
-    return
-    
-def toggle_llzfile():
-    """
-    Toggle llzfile
-    """
-    
-    try:
-        if w.llzfileTF:
-            w.llzfileFIG.set_visible(False)
-            w.llzfileTF=False
-            w.cax.set_visible(False)
-            w.caxTF=False
-        else:
-            w.llzfileFIG.set_visible(True)
-            w.llzfileTF=True
-            w.cax.set_visible(True)
-            w.caxTF=True
-            
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB5var.set(0)    
-    
-    return
     
 
-def getcb(datain):
-    """
-    Get colorbar min max from interface. Use those values default min and max of datain
-    """
-    
-    if w.Entry41.get() == "":
-        cmax = datain.max()
-    else:
-        cmax = float(w.Entry41.get())
-        
-    if w.Entry42.get() == "":
-        cmin = datain.min()
-    else:
-        cmin = float(w.Entry42.get())
-       
-    return cmin, cmax
-    
-
-def redraw_llz():
-    
-    if hasattr(w,'llzfileFIG'):
-        _plot_llzfile()
-        
-    return
-    
-
-def redraw_nei():
-
-    if hasattr(w,'neifiledepthFIG'):
-        _plot_neifiledepth()     
-    
-    return
-    
-    
-def save_nodfile():
-    
-    filename=''
-    filename=asksaveasfilename()
-    if filename != '':
-        ut.save_nodfile(w.nodfile,filename)
- 
-def save_llzfile():
-    
-    filename=''
-    filename=asksaveasfilename()
-    if filename != '':
-        ut.save_llzfile(w.llzfile,filename)
-        
-def save_segfile():
-    
-    filename=''
-    filename=asksaveasfilename()
-    if filename != '':
-        ut.save_segfile(w.segfile,filename)
-        
-def save_nod2polyfile():
-    lastseg=int(list(w.segfile.keys())[-1])
-    w.nod2polyfile=copy.deepcopy(w.segfile)
-    w.nod2polyfile[str(lastseg+1)]=w.nodfile
-
-    filename=''
-    filename=asksaveasfilename()
-    if filename != '':
-        ut.save_nod2polyfile(w.nod2polyfile,filename,len(w.nod2polyfile.keys())-1)
-        
-def save_neifile():
-    
-    filename=''
-    filename=asksaveasfilename()
-    if filename != '':
-        ut.save_neifile(w.neifile,filename)
-
+########################################################################
+#
+#   misc functions
+#
+########################################################################    
 def select_seg():
 
     def set_seg():
@@ -675,8 +291,7 @@ def extract_seg():
     w.CB2var.set(1)
     w.figure.canvas.draw()
     
-    return
-    
+    return    
     
 def extract_nod():
     
@@ -686,12 +301,522 @@ def extract_nod():
     w.CB4var.set(1)
     w.figure.canvas.draw()
     
+    return
+    
+def remove_area():
+    print('pygrid_support.TODO')
+    sys.stdout.flush()
+   
+
+def set_initdir(init_dir):
+    w.init_dir = init_dir
+    
+########################################################################
+#
+#   file type functions
+#
+########################################################################
+def nodfile(filename = '', axis=False):
+    """
+    Load and plot an nodfile.
+    **lots of different format for "nod" files this one is just ll**
+    """
+
+    if filename != '':
+        w.nodfile=ut.load_llzfile(filename)
+        _plot_nodfile()
+        if axis:
+            w.ax.axis([w.nodfile[:,0].min(),w.nodfile[:,0].max(),w.nodfile[:,1].min(),w.nodfile[:,1].max()])
+        w.nodfileTF=True
+        w.CB4var.set(1)
+        w.figure.canvas.draw()
+            
+    return
+    
+ 
+def neifile(filename = '', axis=False):
+    """
+    Load and plot an neifile for command line.
+    """
+    if filename != '':
+        w.neifile=ut.load_nei2fvcom(filename)
+        w.neifileFIG=w.ax.triplot(w.neifile['trigrid'],color='k',lw=.25)
+        if axis:
+            w.ax.axis([w.neifile['lon'].min(),w.neifile['lon'].max(),w.neifile['lat'].min(),w.neifile['lat'].max()])
+        w.neifileTF=True
+        w.neifilecolorTF=False
+        w.CB3var.set(1)
+        w.figure.canvas.draw()
+            
+    return
+    
+    
+def segfile(filename='', axis=False):
+    """
+    Load and plot an segfile for command line.
+    """
+
+    if filename != '':
+        w.segfile=ut.load_segfile(filename)
+        _plot_segfile()
+        if axis:
+            x=np.array([val for seg in w.segfile for val in w.segfile[seg][:,0]])
+            y=np.array([val for seg in w.segfile for val in w.segfile[seg][:,1]])
+            w.ax.axis([x.min(),x.max(),y.min(),y.max()]) 
+        w.segfileTF=True
+        w.CB2var.set(1)
+        w.figure.canvas.draw()
+            
+    return
+
+    
+def llzfile(filename = '' , axis=False):
+    """
+    Load and plot an llzfile.
+    """
+
+    if filename != '':
+        w.llzfile=ut.load_llzfile(filename)
+        
+        if w.llzfile.shape[1]==2:
+            del w.llzfile
+            nodfile(filename,True)
+            return
+        
+        _plot_llzfile()
+
+        w.cax.set_visible(True)
+        if axis:
+            w.ax.axis([w.llzfile[:,0].min(),w.llzfile[:,0].max(),w.llzfile[:,1].min(),w.llzfile[:,1].max()])        
+        w.llzfileTF=True
+        w.caxTF=True
+        w.CB5var.set(1)
+        w.figure.canvas.draw()
+            
+    return
+ 
+########################################################################
+#
+#   draw plots
+#
+########################################################################
+def _plot_nodfile():
+  
+    if hasattr(w,'nodfileFIG'):
+        w.nodfileFIG.remove()        
+       
+    w.nodfileFIG=w.ax.scatter(w.nodfile[:,0], w.nodfile[:,1], c='g',edgecolor='None')
+    w.figure.canvas.draw()
+
+    return
+ 
+def _plot_segfile():
+  
+    if hasattr(w,'segfileFIG'):
+        w.segfileFIG[0].remove()
+        w.segfileFIG[1][0].remove()
+
+    
+    ptarray=np.hstack([[w.segfile[seg][:,0],w.segfile[seg][:,1]] for seg in w.segfile]).T
+    tmparray=[list(zip(w.segfile[seg][:,0],w.segfile[seg][:,1])) for seg in w.segfile]
+    w.linecollection=LC(tmparray,color='b')
+    w.segfileFIG=[w.linecollection,
+                  w.ax.plot(ptarray[:,0],ptarray[:,1],'b.')]
+    w.ax.add_collection(w.linecollection)
+    
+    w.figure.canvas.draw()
+
+    return
+    
+def _plot_llzfile():
+  
+    state = True
+    if hasattr(w,'llzfileFIG'):
+        w.llzfileFIG.remove()
+        state = w.llzfileTF
+    if not hasattr(w,'cb'):
+        w.cb={}
+
+    cmin, cmax = getcb(w.llzfile[:,2])    
+    w.llzfileFIG=w.ax.scatter(w.llzfile[:,0], w.llzfile[:,1], c=w.llzfile[:,2],edgecolor='None',vmin=cmin,vmax=cmax,visible=state)
+    w.cb['llz']=w.figure.colorbar(w.llzfileFIG,cax=w.cax)
+    
+    w.figure.canvas.draw()
+
+    return
+
+    
+def _plot_neifilecolor():
+    
+    if not hasattr(w,'neifilecolorFIG'):
+        w.neifilecolorFIG={}
+    if not hasattr(w,'cb'):
+        w.cb={}
+
+    w.neiplot = w.NeiMenuVar.get()    
+
+    state = True    
+    if w.neiplot in w.neifilecolorFIG:
+        w.neifilecolorFIG[w.neiplot].remove()
+        state = w.neifilecolorTF
+  
+    if w.neiplot == 'Depth':
+        dname='h'
+        cmin, cmax = getcb(w.neifile['h']) 
+    if w.neiplot == 'dhh':
+        dname='dhh'
+        if w.neiplot not in w.neifile:
+            w.neifile=ut.get_dhh(w.neifile)
+        cmin, cmax = getcb(w.neifile['dhh'])
+    if w.neiplot == 'Sidelength':
+        dname='sl'
+        if w.neiplot not in w.neifile:
+            w.neifile=ut.get_sidelength(w.neifile)
+        cmin, cmax = getcb(w.neifile['sl']) 
+          
+    w.neifilecolorFIG[w.neiplot]=w.ax.tripcolor(w.neifile['trigrid'], w.neifile[dname],vmin=cmin,vmax=cmax,visible=state)
+    w.cb[w.neiplot]=w.figure.colorbar(w.neifilecolorFIG[w.neiplot],cax=w.cax)
+
+    w.figure.canvas.draw()
+
+    return
+
+
+########################################################################
+#
+#   plot toggles
+#
+########################################################################
+def toggle_coastline():
+    """
+    Toggle coastline
+    """
+    
+    try:
+        if w.coastlineTF:
+            w.coastlineFIG.set_visible(False)
+            w.coastlineTF=False
+        else:
+            w.coastlineFIG.set_visible(True)
+            w.coastlineTF=True
+            
+        w.figure.canvas.draw()
+    except AttributeError:
+        w.CB1var.set(0)    
+    
+    return
+    
+def toggle_segfile():
+    """
+    Toggle segfile
+    """
+    
+    try:
+        if w.segfileTF:
+            w.segfileFIG[0].set_visible(False)
+            w.segfileFIG[1][0].set_visible(False)
+            w.segfileTF=False
+        else:
+            w.segfileFIG[0].set_visible(True)
+            w.segfileFIG[1][0].set_visible(True)
+            w.segfileTF=True
+            
+        w.figure.canvas.draw()
+    except AttributeError:
+        w.CB2var.set(0)    
+    
+    return
+    
+def toggle_neifile():
+    """
+    Toggle neifile
+    """
+    
+    try:
+        if w.neifileTF:
+            w.neifileFIG[0].set_visible(False)
+            w.neifileFIG[1].set_visible(False)
+            w.neifileTF=False
+        else:
+            w.neifileFIG[0].set_visible(True)
+            w.neifileFIG[1].set_visible(True)
+            w.neifileTF=True
+            
+        w.figure.canvas.draw()
+    except AttributeError:
+        w.CB3var.set(0)    
+    
+    return
+    
+def toggle_neifilecolor():
+    """
+    Toggle neifile depth
+    """
+    
+    try:
+        if w.neifilecolorTF:
+            w.neifilecolorFIG[w.neiplot].set_visible(False)
+            w.neifilecolorTF=False
+            w.cax.set_visible(False)
+            w.caxTF=False
+        else:
+            if not hasattr(w,'neifilecolorFIG[w.neiplot]'):
+                _plot_neifilecolor()   
+            w.neifilecolorFIG[w.neiplot].set_visible(True)
+            w.neifilecolorTF=True
+            w.cax.set_visible(True)
+            w.caxTF=True
+            
+        w.figure.canvas.draw()
+    except AttributeError:
+        w.CB6var.set(0)    
+    
+    return
+    
+def toggle_nodfile():
+    """
+    Toggle nodfile
+    """
+
+    try:
+        if w.nodfileTF:
+            w.nodfileFIG.set_visible(False)
+            w.nodfileTF=False
+        else:
+            w.nodfileFIG.set_visible(True)
+            w.nodfileTF=True
+            
+        w.figure.canvas.draw()
+    except AttributeError:
+        w.CB4var.set(0)    
+    
+    return
+    
+def toggle_llzfile():
+    """
+    Toggle llzfile
+    """
+    
+    try:
+        if w.llzfileTF:
+            w.llzfileFIG.set_visible(False)
+            w.llzfileTF=False
+            w.cax.set_visible(False)
+            w.caxTF=False
+        else:
+            w.llzfileFIG.set_visible(True)
+            w.llzfileTF=True
+            w.cax.set_visible(True)
+            w.caxTF=True
+            
+        w.figure.canvas.draw()
+    except AttributeError:
+        w.CB5var.set(0)    
+    
+    return
+    
+
+def getcb(datain):
+    """
+    Get colorbar min max from interface. Use those values default min and max of datain
+    """
+    
+    if w.Entry41.get() == "":
+        cmax = datain.max()
+    else:
+        cmax = float(w.Entry41.get())
+        
+    if w.Entry42.get() == "":
+        cmin = datain.min()
+    else:
+        cmin = float(w.Entry42.get())
+       
+    return cmin, cmax
+    
+
+def redraw_llz():
+    
+    if hasattr(w,'llzfileFIG'):
+        _plot_llzfile()
+        
+    return
+    
+
+def redraw_nei():
+
+    if hasattr(w,'neifilecolorFIG'):
+        _plot_neifilecolor()     
+    
+    return
+    
+def change_neimenu(*args):
+    
+    #if the color plots are off or there is not neifile do nothing when plot is changed
+    if not hasattr(w,'neifilecolorTF'):
+        w.neifilecolorTF = False 
+    if not w.neifilecolorTF:
+        return    
+    if not hasattr(w,'neifile'):
+        return
+    
+    if hasattr(w,'neiplot') and hasattr(w,'neifilecolorFIG'):
+        if w.neiplot in w.neifilecolorFIG:
+            w.neifilecolorFIG[w.neiplot].set_visible(False)
+        
+        w.neiplot = w.NeiMenuVar.get()    
+        if w.neiplot in w.neifilecolorFIG:
+            w.neifilecolorFIG[w.neiplot].set_visible(True)
+            w.figure.canvas.draw()
+        else:
+            _plot_neifilecolor()
+
+        
+        
+    
+    
+    
+    
+    
+    
+    
+    
+########################################################################
+#
+#   save files
+#
+########################################################################
+def save_nodfile():
+    
+    filename=''
+    filename=asksaveasfilename(initialdir=w.init_dir)
+    if filename != '':
+        ut.save_nodfile(w.nodfile,filename)
+ 
+def save_llzfile():
+    
+    filename=''
+    filename=asksaveasfilename(initialdir=w.init_dir)
+    if filename != '':
+        ut.save_llzfile(w.llzfile,filename)
+        
+def save_segfile():
+    
+    filename=''
+    filename=asksaveasfilename(initialdir=w.init_dir)
+    if filename != '':
+        ut.save_segfile(w.segfile,filename)
+        
+def save_nod2polyfile():
+    lastseg=int(list(w.segfile.keys())[-1])
+    w.nod2polyfile=copy.deepcopy(w.segfile)
+    w.nod2polyfile[str(lastseg+1)]=w.nodfile
+
+    filename=''
+    filename=asksaveasfilename(initialdir=w.init_dir)
+    if filename != '':
+        ut.save_nod2polyfile(w.nod2polyfile,filename,len(w.nod2polyfile.keys())-1)
+        
+def save_neifile():
+    
+    filename=''
+    filename=asksaveasfilename(initialdir=w.init_dir)
+    if filename != '':
+        ut.save_neifile(w.neifile,filename)
+
+
+########################################################################
+#
+#   load files
+#
+########################################################################
+def load_nodfile():
+    """
+    Load and plot an nodfile.
+    **lots of different format for "nod" files this one is just ll**
+    """
+    filename=''
+    filename=askopenfilename(initialdir=w.init_dir)
+
+    nodfile(filename)
+            
+    return
+    
+def load_coastline():
+    """
+    Load and plot a coastline.
+    """
+    filename=''
+    filename=askopenfilename(initialdir=w.init_dir)
+    if filename != '':
+        w.coastline=ut.load_coastline(filename=filename)
+        w.coastlineTF=True
+        w.CB1var.set(1)
+        
+        #Reduce number of segments - helps but not enough
+        #axis=[-68.5,-64,44,46.5]
+        #yep=[]
+        
+        #def isin(axis,line):
+            #return ((line[:,0]>=axis[0]) & (line[:,0]<=axis[1]) & (line[:,1]>=axis[2]) & (line[:,1]<=axis[3])).sum()
+            
+            
+        #for i,line in enumerate(w.coastline):
+            #if isin(axis,np.array(line)):
+                #yep+=[i]
+        
+        
+        w.coastlineFIG=PC(w.coastline,facecolor = '0.75',edgecolor='k',linewidths=1) 
+        w.ax.add_collection(w.coastlineFIG)
+        w.figure.canvas.draw()
+            
+    return
+
+def load_neifile():
+    """
+    Load and plot an neifile.
+    """
+    filename=''
+    filename=askopenfilename(initialdir=w.init_dir)
+    
+    neifile(filename)
+            
+    return
+    
+def load_segfile():
+    """
+    Load and plot an segfile.
+    """
+    filename=''
+    filename=askopenfilename(initialdir=w.init_dir)
+    
+    segfile(filename)
+            
+    return
+    
+def load_llzfile():
+    """
+    Load and plot an llzfile.
+    """
+    filename=''
+    filename=askopenfilename(initialdir=w.init_dir)
+    
+    llzfile(filename)
+            
+    return
+
+
+########################################################################
+#
+#   end code
+#
+########################################################################
 
 def init(top, gui, *args, **kwargs):
     global w, top_level, root
     w = gui
     top_level = top
     root = top
+    
 
 def destroy_window():
     # Function which closes the window.
