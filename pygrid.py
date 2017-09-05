@@ -258,14 +258,18 @@ class New_Toplevel_1:
         self.Frame3.configure(relief=GROOVE)
         self.Frame3.configure(width=805)
 
+        self.types=['coast','seg','nei','nod','llz','neic']
+        self.CBVar={}
+        for typ in self.types:
+            self.CBVar[typ]=IntVar()
+
         self.Checkbutton1 = Checkbutton(self.Frame3)
         self.Checkbutton1.place(relx=0.01, rely=0.04, relheight=0.91, relwidth=0.15)
         self.Checkbutton1.configure(activebackground="#d9d9d9")
         self.Checkbutton1.configure(text='''Show coastline''')
-        self.Checkbutton1.configure(width=72)
-        self.CB1var=IntVar()
+        self.Checkbutton1.configure(width=72)        
         self.Checkbutton1.configure(command=pygrid_support.toggle_coastline)
-        self.Checkbutton1.configure(variable=self.CB1var)
+        self.Checkbutton1.configure(variable=self.CBVar['coast'])
 
         self.Checkbutton2 = Checkbutton(self.Frame3)
         self.Checkbutton2.place(relx=0.16, rely=0.04, relheight=0.91, relwidth=0.15)
@@ -273,45 +277,40 @@ class New_Toplevel_1:
         self.Checkbutton2.configure(justify=LEFT)
         self.Checkbutton2.configure(text='''Show Segfile''')
         self.Checkbutton2.configure(width=82)
-        self.CB2var=IntVar()
         self.Checkbutton2.configure(command=pygrid_support.toggle_segfile)
-        self.Checkbutton2.configure(variable=self.CB2var)
+        self.Checkbutton2.configure(variable=self.CBVar['seg'])
 
         self.Checkbutton3 = Checkbutton(self.Frame3)
         self.Checkbutton3.place(relx=0.31, rely=0.04, relheight=0.91, relwidth=0.12)
         self.Checkbutton3.configure(activebackground="#d9d9d9")
         self.Checkbutton3.configure(justify=LEFT)
         self.Checkbutton3.configure(text='''Show Neifile''')
-        self.CB3var=IntVar()
         self.Checkbutton3.configure(command=pygrid_support.toggle_neifile)
-        self.Checkbutton3.configure(variable=self.CB3var)
+        self.Checkbutton3.configure(variable=self.CBVar['nei'])
 
         self.Checkbutton4 = Checkbutton(self.Frame3)
         self.Checkbutton4.place(relx=0.43, rely=0.04, relheight=0.91, relwidth=0.14)
         self.Checkbutton4.configure(activebackground="#d9d9d9")
         self.Checkbutton4.configure(justify=LEFT)
         self.Checkbutton4.configure(text='''Show Nodfile''')
-        self.CB4var=IntVar()
         self.Checkbutton4.configure(command=pygrid_support.toggle_nodfile)
-        self.Checkbutton4.configure(variable=self.CB4var)
+        self.Checkbutton4.configure(variable=self.CBVar['nod'])
 
         self.Checkbutton5 = Checkbutton(self.Frame3)
         self.Checkbutton5.place(relx=0.57, rely=0.04, relheight=0.91, relwidth=0.12)
         self.Checkbutton5.configure(activebackground="#d9d9d9")
         self.Checkbutton5.configure(justify=LEFT)
         self.Checkbutton5.configure(text='''Show llzfile''')
-        self.CB5var=IntVar()
         self.Checkbutton5.configure(command=pygrid_support.toggle_llzfile)
-        self.Checkbutton5.configure(variable=self.CB5var)
+        self.Checkbutton5.configure(variable=self.CBVar['llz'])
         
         self.Checkbutton6 = Checkbutton(self.Frame3)
         self.Checkbutton6.place(relx=0.70, rely=0.04, relheight=0.91, relwidth=0.15)
         self.Checkbutton6.configure(activebackground="#d9d9d9")
         self.Checkbutton6.configure(justify=LEFT)
         self.Checkbutton6.configure(text='''Show nei color''')
-        self.CB6var=IntVar()
         self.Checkbutton6.configure(command=pygrid_support.toggle_neifilecolor)
-        self.Checkbutton6.configure(variable=self.CB6var)
+        self.Checkbutton6.configure(variable=self.CBVar['neic'])
         
         self.NeiMenuVar = StringVar(root)
         self.NeiChoices={'Depth','dhh','Sidelength'}
@@ -513,6 +512,63 @@ class New_Toplevel_1:
         self.Entry4.configure(background="white")
         self.Entry4.configure(font="TkFixedFont")
         self.Entry4.configure(selectbackground="#c4c4c4")
+        
+        ry += 2*sh
+        self.Labelmin2 = Label(self.Frame5)
+        self.Labelmin2.place(relx=0.275, rely=ry, relheight=rh, relwidth=.3)
+        self.Labelmin2.configure(activebackground="#f9f9f9")
+        self.Labelmin2.configure(text='''Limit Min''')
+        
+        self.Labelmax2 = Label(self.Frame5)
+        self.Labelmax2.place(relx=0.625, rely=ry, relheight=rh, relwidth=.3)
+        self.Labelmax2.configure(activebackground="#f9f9f9")
+        self.Labelmax2.configure(text='''Limit Max''')
+        
+        ry += sh
+        self.Labeldepth = Label(self.Frame5)
+        self.Labeldepth.place(relx=0.05, rely=ry, relheight=rh, relwidth=.2)
+        self.Labeldepth.configure(activebackground="#f9f9f9")
+        self.Labeldepth.configure(text='''Depth''')
+    
+        self.Entryhmin = Entry(self.Frame5)
+        self.Entryhmin.place(relx=0.275, rely=ry, relheight=rh, relwidth=rw2*.75)
+        self.Entryhmin.configure(background="white")
+        self.Entryhmin.configure(font="TkFixedFont")
+        self.Entryhmin.configure(selectbackground="#c4c4c4")
+        
+        self.Entryhmax = Entry(self.Frame5)
+        self.Entryhmax.place(relx=0.625, rely=ry, relheight=rh, relwidth=rw2*.75)
+        self.Entryhmax.configure(background="white")
+        self.Entryhmax.configure(font="TkFixedFont")
+        self.Entryhmax.configure(selectbackground="#c4c4c4")
+    
+        ry += sh
+        self.Labeldhh = Label(self.Frame5)
+        self.Labeldhh.place(relx=0.05, rely=ry, relheight=rh, relwidth=.2)
+        self.Labeldhh.configure(activebackground="#f9f9f9")
+        self.Labeldhh.configure(text='''dhh''')
+        
+        self.Entrydhhmin = Entry(self.Frame5)
+        self.Entrydhhmin.place(relx=0.275, rely=ry, relheight=rh, relwidth=rw2*.75)
+        self.Entrydhhmin.configure(background="white")
+        self.Entrydhhmin.configure(font="TkFixedFont")
+        self.Entrydhhmin.configure(selectbackground="#c4c4c4")
+        
+        self.Entrydhhmax = Entry(self.Frame5)
+        self.Entrydhhmax.place(relx=0.625, rely=ry, relheight=rh, relwidth=rw2*.75)
+        self.Entrydhhmax.configure(background="white")
+        self.Entrydhhmax.configure(font="TkFixedFont")
+        self.Entrydhhmax.configure(selectbackground="#c4c4c4")
+        
+        
+        ry += sh
+        self.Button12 = Button(self.Frame5)
+        self.Button12.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
+        self.Button12.configure(activebackground="#d9d9d9")
+        self.Button12.configure(text='''Smooth''')
+        self.Button12.configure(command=pygrid_support.smooth)
+        
+
         
         ########################################################################
         #

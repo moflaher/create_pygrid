@@ -134,8 +134,8 @@ def spray_area():
         w.nodfile=np.vstack([w.nodfile,np.vstack([lon,lat]).T])
     else:
         w.nodfile=np.vstack([lon,lat]).T
-        w.CB4var.set(1)
-        w.nodfileTF=True
+        w.CBVar['nod'].set(1)
+        w.TF['nod']=True
         
     
     
@@ -162,7 +162,7 @@ def set_depth():
         idx_vec=w.contains(w.neifile['nodell'])
         w.neifile['h'][idx_vec]=depth
     
-        _plot_neifiledepth()
+        _plot_neifilecolor()
 
 
 def avg_depth():
@@ -180,7 +180,7 @@ def avg_depth():
         idx_vec=w.contains(w.neifile['nodell'])
         w.neifile['h'][idx_vec]=np.divide(depth+ w.neifile['h'][idx_vec],2.0)
     
-        _plot_neifiledepth()
+        _plot_neifilecolor()
 
     
 def calc_stats():
@@ -197,7 +197,71 @@ def calc_stats():
         w.Labelsmax['text']="{:.2f}".format(h.max())
         w.Labelsmean['text']="{:.2f}".format(h.mean())
         
+
+def smooth():
+    """
+    Smooth bathymetry. Ignore values based on dhh or depth.
+    """
     
+    
+    if not hasattr(w,'areaVec'):
+        return
+    if not hasattr(w,'contains'):
+        return
+    if not hasattr(w,'neifile'):
+        return
+    
+    hmin=-999999
+    hmax=999999
+    dhhmin=-999999
+    dhhmax=999999
+    
+    if w.Entryhmin.get()!='':
+        hmin=float(w.Entryhmin.get())
+    if w.Entryhmax.get()!='':
+        hmax=float(w.Entryhmax.get())
+    if w.Entrydhhmin.get()!='':
+        dhhmin=float(w.Entrydhhmin.get())
+    if w.Entrydhhmax.get()!='':
+        dhhmax=float(w.Entrydhhmax.get())
+       
+    hidx=w.contains(w.neifile['nodell'])  
+    nidxdhh=np.arange(0,len(w.neifile['nodell']),dtype=int)[hidx]
+    hhidx=np.arange(0,len(w.neifile['nodell']),dtype=int)[hidx]
+     
+    h=copy.deepcopy(w.neifile['h'])
+        
+    if dhhmin!=-999999 or dhhmax!=999999:
+        w.neifile=ut.get_dhh(w.neifile)
+        
+        eidx=w.contains(w.neifile['uvnodell'])
+        tidx=np.arange(0,len(w.neifile['uvnodell']),dtype=int)[eidx]
+        dhhidx=np.argwhere((w.neifile['dhh'][eidx]>=dhhmin) & (w.neifile['dhh'][eidx]<=dhhmax))
+        nidxdhh=np.unique(w.neifile['nv'][tidx[dhhidx],:])
+
+        
+    if hmin!=-999999 or hmax!=999999:
+        hsidx=np.argwhere((w.neifile['h'][hidx]>=hmin) & (w.neifile['h'][hidx]<=hmax))
+        hhidx=hhidx[hsidx]
+
+    TFidx=np.in1d(nidxdhh,hhidx)
+    nidx=nidxdhh[TFidx]  
+    
+
+    for idx in nidx:
+        n=w.neifile['neighbours'][idx,]
+        n=n[n!=0]
+        
+        h[idx]=w.neifile['h'][n-1].mean()
+        
+    w.neifile['h']=h
+    
+    
+    if dhhmin!=-999999 or dhhmax!=999999:
+        w.neifile=ut.get_dhh(w.neifile)
+        
+    if w.TF['neic']:
+        _plot_neifilecolor()
 
 ########################################################################
 #
@@ -287,8 +351,8 @@ def extract_seg():
         w.segfile[str(j)]=np.vstack([w.neifile['lon'][idx],w.neifile['lat'][idx]]).T          
 
     _plot_segfile()
-    w.segfileTF=True
-    w.CB2var.set(1)
+    w.TF['seg']=True
+    w.CBVar['seg'].set(1)
     w.figure.canvas.draw()
     
     return    
@@ -297,8 +361,8 @@ def extract_nod():
     
     w.nodfile=np.vstack([w.neifile['lon'][w.neifile['bcode']==0],w.neifile['lat'][w.neifile['bcode']==0]]).T
     _plot_nodfile()
-    w.nodfileTF=True
-    w.CB4var.set(1)
+    w.TF['nod']=True
+    w.CBVar['nod'].set(1)
     w.figure.canvas.draw()
     
     return
@@ -310,6 +374,20 @@ def remove_area():
 
 def set_initdir(init_dir):
     w.init_dir = init_dir
+    
+    
+def flatten(xs):
+    """
+    Flatten any list.
+    Found at https://stackoverflow.com/a/10632307
+    """
+    result = []
+    if isinstance(xs, (list, tuple)):
+        for x in xs:
+            result.extend(flatten(x))
+    else:
+        result.append(xs)
+    return result
     
 ########################################################################
 #
@@ -327,8 +405,8 @@ def nodfile(filename = '', axis=False):
         _plot_nodfile()
         if axis:
             w.ax.axis([w.nodfile[:,0].min(),w.nodfile[:,0].max(),w.nodfile[:,1].min(),w.nodfile[:,1].max()])
-        w.nodfileTF=True
-        w.CB4var.set(1)
+        w.TF['nod']=True
+        w.CBVar['nod'].set(1)
         w.figure.canvas.draw()
             
     return
@@ -340,12 +418,19 @@ def neifile(filename = '', axis=False):
     """
     if filename != '':
         w.neifile=ut.load_nei2fvcom(filename)
-        w.neifileFIG=w.ax.triplot(w.neifile['trigrid'],color='k',lw=.25)
+        if 'nei' in w.FIGS:
+            w.FIGS['nei'].remove()
+        w.FIGS['nei']=w.ax.triplot(w.neifile['trigrid'],color='k',lw=.25)
         if axis:
             w.ax.axis([w.neifile['lon'].min(),w.neifile['lon'].max(),w.neifile['lat'].min(),w.neifile['lat'].max()])
-        w.neifileTF=True
-        w.neifilecolorTF=False
-        w.CB3var.set(1)
+        w.TF['nei']=True
+        w.TF['neic']=False
+        w.CBVar['nei'].set(1)
+        w.CBVar['neic'].set(0)
+        for key in w.FIGS['neic'].keys():
+            w.FIGS['neic'][key].remove()
+        w.FIGS['neic']={}
+        
         w.figure.canvas.draw()
             
     return
@@ -363,8 +448,8 @@ def segfile(filename='', axis=False):
             x=np.array([val for seg in w.segfile for val in w.segfile[seg][:,0]])
             y=np.array([val for seg in w.segfile for val in w.segfile[seg][:,1]])
             w.ax.axis([x.min(),x.max(),y.min(),y.max()]) 
-        w.segfileTF=True
-        w.CB2var.set(1)
+        w.TF['seg']=True
+        w.CBVar['seg'].set(1)
         w.figure.canvas.draw()
             
     return
@@ -388,9 +473,9 @@ def llzfile(filename = '' , axis=False):
         w.cax.set_visible(True)
         if axis:
             w.ax.axis([w.llzfile[:,0].min(),w.llzfile[:,0].max(),w.llzfile[:,1].min(),w.llzfile[:,1].max()])        
-        w.llzfileTF=True
+        w.TF['llz']=True
         w.caxTF=True
-        w.CB5var.set(1)
+        w.CBVar['llz'].set(1)
         w.figure.canvas.draw()
             
     return
@@ -402,25 +487,25 @@ def llzfile(filename = '' , axis=False):
 ########################################################################
 def _plot_nodfile():
   
-    if hasattr(w,'nodfileFIG'):
-        w.nodfileFIG.remove()        
+    if 'nod' in w.FIGS['nod']:
+        w.FIGS['nod'].remove()        
        
-    w.nodfileFIG=w.ax.scatter(w.nodfile[:,0], w.nodfile[:,1], c='g',edgecolor='None')
+    w.FIGS['nod']=w.ax.scatter(w.nodfile[:,0], w.nodfile[:,1], c='g',edgecolor='None')
     w.figure.canvas.draw()
 
     return
  
 def _plot_segfile():
   
-    if hasattr(w,'segfileFIG'):
-        w.segfileFIG[0].remove()
-        w.segfileFIG[1][0].remove()
+    if 'seg' in w.FIGS['seg']:
+        w.FIGS['seg'][0].remove()
+        w.FIGS['seg'][1][0].remove()
 
     
     ptarray=np.hstack([[w.segfile[seg][:,0],w.segfile[seg][:,1]] for seg in w.segfile]).T
     tmparray=[list(zip(w.segfile[seg][:,0],w.segfile[seg][:,1])) for seg in w.segfile]
     w.linecollection=LC(tmparray,color='b')
-    w.segfileFIG=[w.linecollection,
+    w.FIGS['seg']=[w.linecollection,
                   w.ax.plot(ptarray[:,0],ptarray[:,1],'b.')]
     w.ax.add_collection(w.linecollection)
     
@@ -431,15 +516,15 @@ def _plot_segfile():
 def _plot_llzfile():
   
     state = True
-    if hasattr(w,'llzfileFIG'):
-        w.llzfileFIG.remove()
-        state = w.llzfileTF
+    if 'llz' in w.FIGS['llz']:
+        w.FIGS['llz'].remove()
+        state = w.TF['llz']
     if not hasattr(w,'cb'):
         w.cb={}
 
     cmin, cmax = getcb(w.llzfile[:,2])    
-    w.llzfileFIG=w.ax.scatter(w.llzfile[:,0], w.llzfile[:,1], c=w.llzfile[:,2],edgecolor='None',vmin=cmin,vmax=cmax,visible=state)
-    w.cb['llz']=w.figure.colorbar(w.llzfileFIG,cax=w.cax)
+    w.FIGS['llz']=w.ax.scatter(w.llzfile[:,0], w.llzfile[:,1], c=w.llzfile[:,2],edgecolor='None',vmin=cmin,vmax=cmax,visible=state)
+    w.cb['llz']=w.figure.colorbar(w.FIGS['llz'],cax=w.cax)
     
     w.figure.canvas.draw()
 
@@ -448,17 +533,17 @@ def _plot_llzfile():
     
 def _plot_neifilecolor():
     
-    if not hasattr(w,'neifilecolorFIG'):
-        w.neifilecolorFIG={}
+    if 'neic' not in w.FIGS:
+        w.FIGS['neic']={}
     if not hasattr(w,'cb'):
         w.cb={}
 
     w.neiplot = w.NeiMenuVar.get()    
 
     state = True    
-    if w.neiplot in w.neifilecolorFIG:
-        w.neifilecolorFIG[w.neiplot].remove()
-        state = w.neifilecolorTF
+    if w.neiplot in w.FIGS['neic']:
+        w.FIGS['neic'][w.neiplot].remove()
+        state = w.TF['neic']
   
     if w.neiplot == 'Depth':
         dname='h'
@@ -474,8 +559,8 @@ def _plot_neifilecolor():
             w.neifile=ut.get_sidelength(w.neifile)
         cmin, cmax = getcb(w.neifile['sl']) 
           
-    w.neifilecolorFIG[w.neiplot]=w.ax.tripcolor(w.neifile['trigrid'], w.neifile[dname],vmin=cmin,vmax=cmax,visible=state)
-    w.cb[w.neiplot]=w.figure.colorbar(w.neifilecolorFIG[w.neiplot],cax=w.cax)
+    w.FIGS['neic'][w.neiplot]=w.ax.tripcolor(w.neifile['trigrid'], w.neifile[dname],vmin=cmin,vmax=cmax,visible=state)
+    w.cb[w.neiplot]=w.figure.colorbar(w.FIGS['neic'][w.neiplot],cax=w.cax)
 
     w.figure.canvas.draw()
 
@@ -492,17 +577,7 @@ def toggle_coastline():
     Toggle coastline
     """
     
-    try:
-        if w.coastlineTF:
-            w.coastlineFIG.set_visible(False)
-            w.coastlineTF=False
-        else:
-            w.coastlineFIG.set_visible(True)
-            w.coastlineTF=True
-            
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB1var.set(0)    
+    toggle_plot('coast')   
     
     return
     
@@ -511,19 +586,21 @@ def toggle_segfile():
     Toggle segfile
     """
     
-    try:
-        if w.segfileTF:
-            w.segfileFIG[0].set_visible(False)
-            w.segfileFIG[1][0].set_visible(False)
-            w.segfileTF=False
-        else:
-            w.segfileFIG[0].set_visible(True)
-            w.segfileFIG[1][0].set_visible(True)
-            w.segfileTF=True
+    toggle_plot('seg')
+    
+    #try:
+        #if w.segfileTF:
+            #w.segfileFIG[0].set_visible(False)
+            #w.segfileFIG[1][0].set_visible(False)
+            #w.segfileTF=False
+        #else:
+            #w.segfileFIG[0].set_visible(True)
+            #w.segfileFIG[1][0].set_visible(True)
+            #w.segfileTF=True
             
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB2var.set(0)    
+        #w.figure.canvas.draw()
+    #except AttributeError:
+        #w.CB2var.set(0)    
     
     return
     
@@ -532,19 +609,20 @@ def toggle_neifile():
     Toggle neifile
     """
     
-    try:
-        if w.neifileTF:
-            w.neifileFIG[0].set_visible(False)
-            w.neifileFIG[1].set_visible(False)
-            w.neifileTF=False
-        else:
-            w.neifileFIG[0].set_visible(True)
-            w.neifileFIG[1].set_visible(True)
-            w.neifileTF=True
+    toggle_plot('nei')
+    #try:
+        #if w.neifileTF:
+            #w.neifileFIG[0].set_visible(False)
+            #w.neifileFIG[1].set_visible(False)
+            #w.neifileTF=False
+        #else:
+            #w.neifileFIG[0].set_visible(True)
+            #w.neifileFIG[1].set_visible(True)
+            #w.neifileTF=True
             
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB3var.set(0)    
+        #w.figure.canvas.draw()
+    #except AttributeError:
+        #w.CB3var.set(0)    
     
     return
     
@@ -554,22 +632,22 @@ def toggle_neifilecolor():
     """
     
     try:
-        if w.neifilecolorTF:
-            w.neifilecolorFIG[w.neiplot].set_visible(False)
-            w.neifilecolorTF=False
+        if w.TF['neic']:
+            w.FIGS['neic'][w.neiplot].set_visible(False)
+            w.TF['neic']=False
             w.cax.set_visible(False)
             w.caxTF=False
         else:
-            if not hasattr(w,'neifilecolorFIG[w.neiplot]'):
+            if w.neiplot not in w.FIGS['neic']:
                 _plot_neifilecolor()   
-            w.neifilecolorFIG[w.neiplot].set_visible(True)
-            w.neifilecolorTF=True
+            w.FIGS['neic'][w.neiplot].set_visible(True)
+            w.TF['neic']=True
             w.cax.set_visible(True)
             w.caxTF=True
             
         w.figure.canvas.draw()
     except AttributeError:
-        w.CB6var.set(0)    
+        w.CBVar['neic'].set(0)    
     
     return
     
@@ -578,17 +656,7 @@ def toggle_nodfile():
     Toggle nodfile
     """
 
-    try:
-        if w.nodfileTF:
-            w.nodfileFIG.set_visible(False)
-            w.nodfileTF=False
-        else:
-            w.nodfileFIG.set_visible(True)
-            w.nodfileTF=True
-            
-        w.figure.canvas.draw()
-    except AttributeError:
-        w.CB4var.set(0)    
+    toggle_plot('nod')   
     
     return
     
@@ -596,24 +664,36 @@ def toggle_llzfile():
     """
     Toggle llzfile
     """
+        
+    toggle_plot('llz',True)   
     
+    return
+ 
+def toggle_plot(name,color=False):
+    """
+    Toggle the checkbox plots
+    """
     try:
-        if w.llzfileTF:
-            w.llzfileFIG.set_visible(False)
-            w.llzfileTF=False
-            w.cax.set_visible(False)
-            w.caxTF=False
+        swap=flatten(w.FIGS[name])
+        if w.TF[name]:
+            for p in swap:
+                p.set_visible(False)
+            w.TF[name]=False
+            if color:
+                w.cax.set_visible(False)
+                w.caxTF=False
         else:
-            w.llzfileFIG.set_visible(True)
-            w.llzfileTF=True
-            w.cax.set_visible(True)
-            w.caxTF=True
+            for p in swap:
+                p.set_visible(True)
+            w.TF[name]=True
+            if color:
+                w.cax.set_visible(True)
+                w.caxTF=True
             
         w.figure.canvas.draw()
     except AttributeError:
-        w.CB5var.set(0)    
+        w.CBVar[name].set(0)  
     
-    return
     
 
 def getcb(datain):
@@ -636,7 +716,7 @@ def getcb(datain):
 
 def redraw_llz():
     
-    if hasattr(w,'llzfileFIG'):
+    if 'llz' in w.FIGS:
         _plot_llzfile()
         
     return
@@ -644,7 +724,7 @@ def redraw_llz():
 
 def redraw_nei():
 
-    if hasattr(w,'neifilecolorFIG'):
+    if 'neic' in w.FIGS:
         _plot_neifilecolor()     
     
     return
@@ -652,20 +732,18 @@ def redraw_nei():
 def change_neimenu(*args):
     
     #if the color plots are off or there is not neifile do nothing when plot is changed
-    if not hasattr(w,'neifilecolorTF'):
-        w.neifilecolorTF = False 
-    if not w.neifilecolorTF:
+    if not w.TF['neic']:
         return    
     if not hasattr(w,'neifile'):
         return
     
-    if hasattr(w,'neiplot') and hasattr(w,'neifilecolorFIG'):
-        if w.neiplot in w.neifilecolorFIG:
-            w.neifilecolorFIG[w.neiplot].set_visible(False)
+    if hasattr(w,'neiplot'):
+        if w.neiplot in w.FIGS['neic']:
+            w.FIGS['neic'][w.neiplot].set_visible(False)
         
         w.neiplot = w.NeiMenuVar.get()    
-        if w.neiplot in w.neifilecolorFIG:
-            w.neifilecolorFIG[w.neiplot].set_visible(True)
+        if w.neiplot in w.FIGS['neic']:
+            w.FIGS['neic'][w.neiplot].set_visible(True)
             w.figure.canvas.draw()
         else:
             _plot_neifilecolor()
@@ -749,8 +827,8 @@ def load_coastline():
     filename=askopenfilename(initialdir=w.init_dir)
     if filename != '':
         w.coastline=ut.load_coastline(filename=filename)
-        w.coastlineTF=True
-        w.CB1var.set(1)
+        w.TF['coast']=True
+        w.CBVar['coast'].set(1)
         
         #Reduce number of segments - helps but not enough
         #axis=[-68.5,-64,44,46.5]
@@ -765,8 +843,8 @@ def load_coastline():
                 #yep+=[i]
         
         
-        w.coastlineFIG=PC(w.coastline,facecolor = '0.75',edgecolor='k',linewidths=1) 
-        w.ax.add_collection(w.coastlineFIG)
+        w.FIGS['coast']=PC(w.coastline,facecolor = '0.75',edgecolor='k',linewidths=1) 
+        w.ax.add_collection(w.FIGS['coast'])
         w.figure.canvas.draw()
             
     return
@@ -816,6 +894,17 @@ def init(top, gui, *args, **kwargs):
     w = gui
     top_level = top
     root = top
+    
+    #init a bunch of stuff
+    #w.types=['coastline','segfile','neifile','nodfile','llzfile','neifilecolor']
+    #w.plots=['Depth','Sidelength','dhh']
+    w.FIGS={}
+    w.TF={}
+    w.FIGS['neic']={}
+    for tf in w.types:
+        w.TF[tf]=False
+    w.neiplot='Depth'
+    
     
 
 def destroy_window():
