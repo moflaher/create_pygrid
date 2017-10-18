@@ -487,7 +487,7 @@ def llzfile(filename = '' , axis=False):
 ########################################################################
 def _plot_nodfile():
   
-    if 'nod' in w.FIGS['nod']:
+    if 'nod' in w.FIGS:
         w.FIGS['nod'].remove()        
        
     w.FIGS['nod']=w.ax.scatter(w.nodfile[:,0], w.nodfile[:,1], c='g',edgecolor='None')
@@ -497,11 +497,11 @@ def _plot_nodfile():
  
 def _plot_segfile():
   
-    if 'seg' in w.FIGS['seg']:
+    if 'seg' in w.FIGS:
         w.FIGS['seg'][0].remove()
         w.FIGS['seg'][1][0].remove()
 
-    
+
     ptarray=np.hstack([[w.segfile[seg][:,0],w.segfile[seg][:,1]] for seg in w.segfile]).T
     tmparray=[list(zip(w.segfile[seg][:,0],w.segfile[seg][:,1])) for seg in w.segfile]
     w.linecollection=LC(tmparray,color='b')
@@ -516,7 +516,7 @@ def _plot_segfile():
 def _plot_llzfile():
   
     state = True
-    if 'llz' in w.FIGS['llz']:
+    if 'llz' in w.FIGS:
         w.FIGS['llz'].remove()
         state = w.TF['llz']
     if not hasattr(w,'cb'):
