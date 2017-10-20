@@ -429,6 +429,13 @@ class New_Toplevel_1:
         self.Button9.configure(text='''Extract seg from nei''')
         self.Button9.configure(command=pygrid_support.extract_seg)
         
+        #ry += sh
+        #self.Button9 = Button(self.Frame2)
+        #self.Button9.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
+        #self.Button9.configure(activebackground="#d9d9d9")
+        #self.Button9.configure(text='''Remove area and seg''')
+        #self.Button9.configure(command=pygrid_support.removeandseg)
+        
         
         ########################################################################
         #
