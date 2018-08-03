@@ -141,6 +141,33 @@ def spray_area():
     
     _plot_nodfile()
         
+
+def remove_area():
+    if not hasattr(w,'areaVec'):
+        return
+    if not hasattr(w,'contains'):
+        return      
+    if not hasattr(w,'nodfile'):
+        return
+        
+    idx_vec=w.contains(w.nodfile)
+    w.nodfile=w.nodfile[~idx_vec,:]
+        
+    _plot_nodfile()
+    
+
+def remove_area_llz():
+    if not hasattr(w,'areaVec'):
+        return
+    if not hasattr(w,'contains'):
+        return      
+    if not hasattr(w,'llzfile'):
+        return
+        
+    idx_vec=w.contains(w.llzfile[:,:2])
+    w.llzfile=w.llzfile[~idx_vec,:]
+        
+    _plot_llzfile()
  
 ########################################################################
 #
@@ -367,10 +394,16 @@ def extract_nod():
     
     return
     
-def remove_area():
-    print('pygrid_support.TODO')
-    sys.stdout.flush()
-   
+def extract_llz():
+    
+    w.llzfile=np.vstack([w.neifile['lon'][w.neifile['bcode']==0],w.neifile['lat'][w.neifile['bcode']==0],w.neifile['h'][w.neifile['bcode']==0]]).T
+    _plot_llzfile()
+    w.TF['llz']=True
+    w.CBVar['llz'].set(1)
+    w.figure.canvas.draw()
+    
+    return
+    
 
 def set_initdir(init_dir):
     w.init_dir = init_dir

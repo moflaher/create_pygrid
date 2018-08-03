@@ -459,7 +459,7 @@ def save_segfile(segfile,outfile=None):
     return 
 
 
-def save_llz(data,filename=None):
+def save_llzfile(data,filename=None):
     """
     Saves a llz array as a file. Takes an Nx3 array 
     """

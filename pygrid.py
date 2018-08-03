@@ -381,12 +381,19 @@ class New_Toplevel_1:
         self.Button3.configure(text='''Spray Area''')
         self.Button3.configure(command=pygrid_support.spray_area)
         
-    
-        #self.Button4 = Button(self.Frame2)
-        #self.Button4.place(relx=0.075, rely=0.21, relheight=rh, relwidth=rw)
-        #self.Button4.configure(activebackground="#d9d9d9")
-        #self.Button4.configure(text='''Remove Area''')
-        #self.Button4.configure(command=pygrid_support.remove_area)
+        ry += sh
+        self.Button4 = Button(self.Frame2)
+        self.Button4.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
+        self.Button4.configure(activebackground="#d9d9d9")
+        self.Button4.configure(text='''Remove Area''')
+        self.Button4.configure(command=pygrid_support.remove_area)
+        
+        ry += sh
+        self.Button4 = Button(self.Frame2)
+        self.Button4.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
+        self.Button4.configure(activebackground="#d9d9d9")
+        self.Button4.configure(text='''Remove Area (llz)''')
+        self.Button4.configure(command=pygrid_support.remove_area_llz)
 
         ry += sh
         self.Button5 = Button(self.Frame2)
@@ -428,6 +435,13 @@ class New_Toplevel_1:
         self.Button9.configure(activebackground="#d9d9d9")
         self.Button9.configure(text='''Extract seg from nei''')
         self.Button9.configure(command=pygrid_support.extract_seg)
+        
+        ry += sh
+        self.Button10 = Button(self.Frame2)
+        self.Button10.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
+        self.Button10.configure(activebackground="#d9d9d9")
+        self.Button10.configure(text='''Extract llz from nei''')
+        self.Button10.configure(command=pygrid_support.extract_llz)
         
         #ry += sh
         #self.Button9 = Button(self.Frame2)
