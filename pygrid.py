@@ -40,8 +40,10 @@ def vp_start_gui():
             root.after(100, pygrid_support.neifile(filename,True))
         if filename[-3:]=='seg':
             root.after(100, pygrid_support.segfile(filename,True))
-        if filename[-3:]=='llz':
+        if filename[-3:]=='llz' or filename[-3:]=='xyz':
             root.after(100, pygrid_support.llzfile(filename,True))
+        if filename[-3:]=='yxz':
+            root.after(100, pygrid_support.llzfile(filename,True,True))
         if filename[-2:]=='ll':
             root.after(100, pygrid_support.nodfile(filename,True))
         if filename[-3:]=='dat':

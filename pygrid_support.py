@@ -488,13 +488,13 @@ def segfile(filename='', axis=False):
     return
 
     
-def llzfile(filename = '' , axis=False):
+def llzfile(filename = '' , axis=False, flip=False):
     """
     Load and plot an llzfile.
     """
 
     if filename != '':
-        w.llzfile=ut.load_llzfile(filename)
+        w.llzfile=ut.load_llzfile(filename, flip)
         
         if w.llzfile.shape[1]==2:
             del w.llzfile

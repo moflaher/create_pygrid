@@ -389,7 +389,7 @@ def load_segfile(filename=None):
     return data
 
 
-def load_llzfile(filename=None):
+def load_llzfile(filename=None, flip=False):
     """
     Loads an llz file the data as an array. 
     """
@@ -406,7 +406,9 @@ def load_llzfile(filename=None):
         return data
 
     data=np.loadtxt(filename)
-    
+    if flip:
+        data[:,[0, 1]] = data[:,[1, 0]]
+        
     fp.close()
 
     return data
