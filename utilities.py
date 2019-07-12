@@ -16,7 +16,11 @@ import collections
 import copy
 
 
-
+########################################################################
+#
+# Code for loading files
+#
+########################################################################
 
 def loadnc(datadir, singlename=[], fvcom=True):
     """
@@ -134,6 +138,8 @@ def load_coastline(filename):
 
     #_base_dir = os.path.realpath(inspect.stack()[0][1])
     #idx=_base_dir.rfind('/')
+
+
     sl=loadnc('',filename)
 
     idx=np.where(sl['count']!=0)[0]
@@ -209,7 +215,213 @@ def load_nei2fvcom(filename):
     data=ncdatasort(data)     
         
     return data
+
+
+def load_segfile(filename=None):
+    """
+    Loads an seg file the data as a dictionary. 
+    """
+
+    data={}
     
+    if filename==None:
+        print('load_segfile requires a filename to load.')
+        return
+    try:
+        fp=open(filename,'r')
+    except IOError:
+        print('load_segfile: invalid filename.')
+        return data
+
+    data=collections.OrderedDict()
+
+    for line in fp:
+        llist=line.split()
+        if len(llist)==2:
+            cnt=0
+            currentseg=llist[0]
+            data[currentseg]=np.empty((int(llist[1]),2))
+        else:
+            data[currentseg][cnt,:]=llist[1:3]
+            cnt+=1
+
+    fp.close()
+
+    return data
+
+
+def load_llzfile(filename=None, flip=False):
+    """
+    Loads an llz file the data as an array. 
+    """
+
+    data={}
+    
+    if filename==None:
+        print('load_llzfile requires a filename to load.')
+        return
+    try:
+        fp=open(filename,'r')
+    except IOError:
+        print('load_llzfile: invalid filename.')
+        return data
+
+    data=np.loadtxt(filename)
+    if flip:
+        data[:,[0, 1]] = data[:,[1, 0]]
+        
+    fp.close()
+
+    return data
+    
+    
+########################################################################
+#
+# Code for saving files
+#
+########################################################################
+    
+def save_nodfile(data,filename=None):
+    """
+    Saves a nodfile array as a file.
+
+ 
+    """
+    
+    if filename==None:
+        print('save_nodfile requires a filename to save.')
+        return
+    try:
+        fp=open(filename,'w')
+    except IOError:
+        print('Can''t make ' + filename)
+        return
+
+
+    for i in range(len(data)):
+        fp.write('%f %f\n' % (data[i,0],data[i,1]) )
+    
+    fp.close()
+
+
+
+def save_segfile(segfile,outfile=None):
+    """
+    Saves a seg file. 
+    """
+
+
+    if outfile==None:
+        print('save_segfile requires a filename to save.')
+        return
+    try:
+        fp=open(outfile,'w')
+    except IOError:
+        print('save_segfile: invalid filename.')
+        return
+
+    for seg in segfile:
+        fp.write('%s %d\n' % (seg,len(segfile[seg]) ) )
+        for i in range(len(segfile[seg])):
+            fp.write('%d %f %f\n' % (i+1,segfile[seg][i,0],segfile[seg][i,1] ) )
+    fp.close()
+
+    return 
+
+
+def save_llzfile(data,filename=None):
+    """
+    Saves a llz array as a file. Takes an Nx3 array 
+    """
+    
+    if filename==None:
+        print('save_llz requires a filename to save.')
+        return
+    try:
+        fp=open(filename,'w')
+    except IOError:
+        print('Can''t make ' + filename)
+        return
+
+    for i in range(len(data)):
+        fp.write('%f %f %f\n' % (data[i,0],data[i,1],data[i,2] ) )
+
+    fp.close()
+    
+    
+def save_neifile(neifile=None,neifilename=None):
+    """
+    save a .nei file
+
+ 
+    """
+    
+    if neifilename==None:
+        print('savenei requires a filename to save.')
+        return
+    try:
+        fp=open(neifilename,'w')
+    except IOError:
+        print('Can''t make ' + neifilename)
+        return
+
+    if neifile==None:
+        print('No neifile dict given.')
+        return
+
+    fp.write('%d\n' % neifile['nnodes'])
+    fp.write('%d\n' % neifile['maxnei'])
+    fp.write('%f %f %f %f\n' % (neifile['llminmax'][0],neifile['llminmax'][1],neifile['llminmax'][2],neifile['llminmax'][3]))   
+   
+
+    for i in range(0,neifile['nnodes']):
+        fp.write('%d %f %f %d %f %s\n' % (neifile['nodenumber'][i], neifile['nodell'][i,0], neifile['nodell'][i,1], neifile['bcode'][i] ,neifile['h'][i],np.array_str(neifile['neighbours'][i,].astype(int))[1:-1] ) )
+
+    
+    fp.close()
+
+
+def save_nod2polyfile(segfile,filename=None,bnum=[]):
+    """
+    Save a nod2poly file from a nod2poly dict. 
+    """
+    
+    if filename==None:
+        print('save_nodfile requires a filename to save.')
+        return
+    try:
+        fp=open(filename,'w')
+    except IOError:
+        print('save_nod2polyfile: invalid filename.')
+        return data
+
+    dictlen=0
+    for key in segfile.keys():
+        dictlen+=len(segfile[key])
+
+
+    fp.write('%d\n' % dictlen )
+    if bnum==[]:
+        fp.write('%d\n' % len(segfile.keys()) )
+    else:
+        fp.write('%d\n' % bnum )
+
+    for key in segfile.keys():
+        fp.write('%d\n'% len(segfile[key]))
+        for i in range(len(segfile[key])):
+            fp.write('%f %f %f\n'% (segfile[key][i,0],segfile[key][i,1],0.0))
+
+    fp.close()
+
+   
+    return 
+
+
+########################################################################
+#
+#  Misc functions
+#
+########################################################################        
     
 def get_nv(neifile):
 
@@ -355,236 +567,7 @@ def lcc(lon,lat):
     x,y=proj(lon,lat)     
     
     return x,y,proj
-
-def load_segfile(filename=None):
-    """
-    Loads an seg file the data as a dictionary. 
-    """
-
-    data={}
     
-    if filename==None:
-        print('load_segfile requires a filename to load.')
-        return
-    try:
-        fp=open(filename,'r')
-    except IOError:
-        print('load_segfile: invalid filename.')
-        return data
-
-    data=collections.OrderedDict()
-
-    for line in fp:
-        llist=line.split()
-        if len(llist)==2:
-            cnt=0
-            currentseg=llist[0]
-            data[currentseg]=np.empty((int(llist[1]),2))
-        else:
-            data[currentseg][cnt,:]=llist[1:3]
-            cnt+=1
-
-    fp.close()
-
-    return data
-
-
-def load_llzfile(filename=None, flip=False):
-    """
-    Loads an llz file the data as an array. 
-    """
-
-    data={}
-    
-    if filename==None:
-        print('load_llzfile requires a filename to load.')
-        return
-    try:
-        fp=open(filename,'r')
-    except IOError:
-        print('load_llzfile: invalid filename.')
-        return data
-
-    data=np.loadtxt(filename)
-    if flip:
-        data[:,[0, 1]] = data[:,[1, 0]]
-        
-    fp.close()
-
-    return data
-    
-def save_nodfile(data,filename=None):
-    """
-    Saves a nodfile array as a file.
-
- 
-    """
-    
-    if filename==None:
-        print('save_nodfile requires a filename to save.')
-        return
-    try:
-        fp=open(filename,'w')
-    except IOError:
-        print('Can''t make ' + filename)
-        return
-
-
-    for i in range(len(data)):
-        fp.write('%f %f\n' % (data[i,0],data[i,1]) )
-    
-    fp.close()
-
-
-
-def save_segfile(segfile,outfile=None):
-    """
-    Saves a seg file. 
-    """
-
-
-    if outfile==None:
-        print('save_segfile requires a filename to save.')
-        return
-    try:
-        fp=open(outfile,'w')
-    except IOError:
-        print('save_segfile: invalid filename.')
-        return
-
-    for seg in segfile:
-        fp.write('%s %d\n' % (seg,len(segfile[seg]) ) )
-        for i in range(len(segfile[seg])):
-            fp.write('%d %f %f\n' % (i+1,segfile[seg][i,0],segfile[seg][i,1] ) )
-    fp.close()
-
-    return 
-
-
-def save_llzfile(data,filename=None):
-    """
-    Saves a llz array as a file. Takes an Nx3 array 
-    """
-    
-    if filename==None:
-        print('save_llz requires a filename to save.')
-        return
-    try:
-        fp=open(filename,'w')
-    except IOError:
-        print('Can''t make ' + filename)
-        return
-
-    for i in range(len(data)):
-        fp.write('%f %f %f\n' % (data[i,0],data[i,1],data[i,2] ) )
-
-    fp.close()
-    
-    
-def save_neifile(neifile=None,neifilename=None):
-    """
-    save a .nei file
-
- 
-    """
-    
-    if neifilename==None:
-        print('savenei requires a filename to save.')
-        return
-    try:
-        fp=open(neifilename,'w')
-    except IOError:
-        print('Can''t make ' + neifilename)
-        return
-
-    if neifile==None:
-        print('No neifile dict given.')
-        return
-
-    fp.write('%d\n' % neifile['nnodes'])
-    fp.write('%d\n' % neifile['maxnei'])
-    fp.write('%f %f %f %f\n' % (neifile['llminmax'][0],neifile['llminmax'][1],neifile['llminmax'][2],neifile['llminmax'][3]))   
-   
-
-    for i in range(0,neifile['nnodes']):
-        fp.write('%d %f %f %d %f %s\n' % (neifile['nodenumber'][i], neifile['nodell'][i,0], neifile['nodell'][i,1], neifile['bcode'][i] ,neifile['h'][i],np.array_str(neifile['neighbours'][i,].astype(int))[1:-1] ) )
-
-    
-    fp.close()
-
-def sort_boundary(neifile,boundary=1):
-
-    nn=copy.deepcopy(neifile['nodenumber'][neifile['bcode']==boundary]).astype(int)
-    nnei=copy.deepcopy(neifile['neighbours'][neifile['bcode']==boundary]).astype(int)
-    
-    #find the neighbour of the first node
-    idx=np.argwhere(nnei==nn[0])[0][0]
-    
-    #have to use temp values with copy as the standard swap doesn't work when things are swapped again and again.
-    #there must be a more python way to hand that....
-    tmpval=nn[1].copy()
-    nn[1]=nn[idx]
-    nn[idx]=tmpval    
-    tmpval=nnei[1,:].copy()
-    nnei[1,:]=nnei[idx,:]
-    nnei[idx,:]=tmpval
-   
-    for i in range(1,len(nn)-1):
-        for j in range(neifile['maxnei']):
-            nei=nnei[i,j]
-            if nei==0: continue
-            idx=np.argwhere(nn[(i+1):]==nei)
-
-            if len(idx)==1:
-                tmpval=nn[(i+1)].copy()
-                nn[(i+1)]=nn[(idx+i+1)]
-                nn[(idx+i+1)]=tmpval                
-                tmpval=nnei[(i+1),:].copy()
-                nnei[(i+1),:]=nnei[(idx+i+1),:]
-                nnei[(idx+i+1),:]=tmpval
-                break
-                
-                
-    nn=np.hstack([nn,nn[0]])
-    
-    return nn
-
-
-def save_nod2polyfile(segfile,filename=None,bnum=[]):
-    """
-    Save a nod2poly file from a nod2poly dict. 
-    """
-    
-    if filename==None:
-        print('save_nodfile requires a filename to save.')
-        return
-    try:
-        fp=open(filename,'w')
-    except IOError:
-        print('save_nod2polyfile: invalid filename.')
-        return data
-
-    dictlen=0
-    for key in segfile.keys():
-        dictlen+=len(segfile[key])
-
-
-    fp.write('%d\n' % dictlen )
-    if bnum==[]:
-        fp.write('%d\n' % len(segfile.keys()) )
-    else:
-        fp.write('%d\n' % bnum )
-
-    for key in segfile.keys():
-        fp.write('%d\n'% len(segfile[key]))
-        for i in range(len(segfile[key])):
-            fp.write('%f %f %f\n'% (segfile[key][i,0],segfile[key][i,1],0.0))
-
-    fp.close()
-
-   
-    return 
-
 
 def get_sidelength(data):
     """
@@ -631,3 +614,41 @@ def get_dhh(data):
             
     data['dhh']=dh
     return data
+    
+    
+def sort_boundary(neifile,boundary=1):
+
+    nn=copy.deepcopy(neifile['nodenumber'][neifile['bcode']==boundary]).astype(int)
+    nnei=copy.deepcopy(neifile['neighbours'][neifile['bcode']==boundary]).astype(int)
+    
+    #find the neighbour of the first node
+    idx=np.argwhere(nnei==nn[0])[0][0]
+    
+    #have to use temp values with copy as the standard swap doesn't work when things are swapped again and again.
+    #there must be a more python way to hand that....
+    tmpval=nn[1].copy()
+    nn[1]=nn[idx]
+    nn[idx]=tmpval    
+    tmpval=nnei[1,:].copy()
+    nnei[1,:]=nnei[idx,:]
+    nnei[idx,:]=tmpval
+   
+    for i in range(1,len(nn)-1):
+        for j in range(neifile['maxnei']):
+            nei=nnei[i,j]
+            if nei==0: continue
+            idx=np.argwhere(nn[(i+1):]==nei)
+
+            if len(idx)==1:
+                tmpval=nn[(i+1)].copy()
+                nn[(i+1)]=nn[(idx+i+1)]
+                nn[(idx+i+1)]=tmpval                
+                tmpval=nnei[(i+1),:].copy()
+                nnei[(i+1),:]=nnei[(idx+i+1),:]
+                nnei[(idx+i+1),:]=tmpval
+                break
+                
+                
+    nn=np.hstack([nn,nn[0]])
+    
+    return nn

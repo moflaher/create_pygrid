@@ -102,23 +102,13 @@ class New_Toplevel_1:
 
         self.figure = Figure(dpi=50)
         self.Canvas1 = FigureCanvasTkAgg(self.figure, master=self.Frame1)
-        self.Canvas1.get_tk_widget().pack(side=TOP, fill="both", expand=1)
-        #self.Canvas1.place(relx=0.01, rely=0.06, relheight=0.85, relwidth=0.97)
-        #self.Canvas1.configure(background="white")
-        #self.Canvas1.configure(borderwidth="2")
-        #self.Canvas1.configure(relief=RIDGE)
-        #self.Canvas1.configure(selectbackground="#c4c4c4")
-        #self.Canvas1.configure(width=784)
-        
+        self.Canvas1.get_tk_widget().pack(side=TOP, fill="both", expand=1)       
 
         self.ax = self.figure.add_axes([.05,.05,.80,.9]) 
         self.ax.axis([-180, 180, -90, 90])
         self.cax = self.figure.add_axes([.05+.8+0.025,.05,.025,.9])
         self.cax.set_visible(False)
-        #self.Canvas1.show()
         self.toolbar = NavigationToolbar2TkAgg( self.Canvas1, self.Frame1 )
-        #self.toolbar.pack(side=Tk.BOTTOM)
-
         self.menubar = Menu(top,bg=self._bgcolor,fg=self._fgcolor)
         top.configure(menu = self.menubar)
         
@@ -229,6 +219,8 @@ class New_Toplevel_1:
                 command=pygrid_support.load_llzfile,
                 foreground="#000000",
                 label="Load llzfile")
+       
+                
         self.help = Menu(top,tearoff=0)
         self.menubar.add_cascade(menu=self.help,
                 activebackground="#d9d9d9",
@@ -632,71 +624,8 @@ class New_Toplevel_1:
         self.Button14.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
         self.Button14.configure(activebackground="#d9d9d9")
         self.Button14.configure(text='''Delete Seg''')
-        self.Button14.configure(command=pygrid_support.TODO)#select_seg)
-        
-        # ry += sh
-        # self.Button4 = Button(self.Frame2)
-        # self.Button4.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
-        # self.Button4.configure(activebackground="#d9d9d9")
-        # self.Button4.configure(text='''Remove Area''')
-        # self.Button4.configure(command=pygrid_support.remove_area)
-        
-        # ry += sh
-        # self.Button4 = Button(self.Frame2)
-        # self.Button4.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
-        # self.Button4.configure(activebackground="#d9d9d9")
-        # self.Button4.configure(text='''Remove Area (llz)''')
-        # self.Button4.configure(command=pygrid_support.remove_area_llz)
-
-        # ry += sh
-        # self.Button5 = Button(self.Frame2)
-        # self.Button5.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw2)
-        # self.Button5.configure(activebackground="#d9d9d9")
-        # self.Button5.configure(text='''Select Seg''')
-        # self.Button5.configure(command=pygrid_support.select_seg)
-        
-        # self.Entry2 = Entry(self.Frame2)
-        # self.Entry2.place(relx=0.525, rely=ry, relheight=rh, relwidth=rw2)
-        # self.Entry2.configure(background="white")
-        # self.Entry2.configure(font="TkFixedFont")
-        # self.Entry2.configure(selectbackground="#c4c4c4")
-        
-        # ry += sh
-        # self.Button6 = Button(self.Frame2)
-        # self.Button6.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
-        # self.Button6.configure(activebackground="#d9d9d9")
-        # self.Button6.configure(text='''Remove nodes inside seg''')
-        # self.Button6.configure(command=pygrid_support.remove_nodeseg_in)
-        
-        # ry += sh
-        # self.Button7 = Button(self.Frame2)
-        # self.Button7.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
-        # self.Button7.configure(activebackground="#d9d9d9")
-        # self.Button7.configure(text='''Remove nodes outside seg''')
-        # self.Button7.configure(command=pygrid_support.remove_nodeseg_out)
-
-        # ry += sh
-        # self.Button8 = Button(self.Frame2)
-        # self.Button8.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
-        # self.Button8.configure(activebackground="#d9d9d9")
-        # self.Button8.configure(text='''Extract nod from nei''')
-        # self.Button8.configure(command=pygrid_support.extract_nod)
-        
-        # ry += sh
-        # self.Button9 = Button(self.Frame2)
-        # self.Button9.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
-        # self.Button9.configure(activebackground="#d9d9d9")
-        # self.Button9.configure(text='''Extract seg from nei''')
-        # self.Button9.configure(command=pygrid_support.extract_seg)
-        
-        # ry += sh
-        # self.Button10 = Button(self.Frame2)
-        # self.Button10.place(relx=0.075, rely=ry, relheight=rh, relwidth=rw)
-        # self.Button10.configure(activebackground="#d9d9d9")
-        # self.Button10.configure(text='''Extract llz from nei''')
-        # self.Button10.configure(command=pygrid_support.extract_llz)
-        
-        
+        self.Button14.configure(command=pygrid_support.delete_seg)#select_seg)
+               
 
         
         ########################################################################

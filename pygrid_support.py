@@ -290,9 +290,10 @@ def smooth():
     if w.TF['neic']:
         _plot_neifilecolor()
 
+
 ########################################################################
 #
-#   misc functions
+#   segment code
 #
 ########################################################################    
 def clear_tmp_seg():
@@ -410,6 +411,27 @@ def create_seg():
     
     return 
     
+    
+def delete_seg():
+    if w.Entry2.get()=='':
+        return
+    if hasattr(w,'segfile'):
+        if w.Entry2.get() in w.segfile:
+            del w.segfile[w.Entry2.get()]
+        if len(w.segfile.keys())==0:
+            del w.segfile  
+            w.TF['seg']=False
+            w.CBVar['seg'].set(0)  
+            
+    _plot_segfile()
+    
+        
+
+########################################################################
+#
+#   misc functions
+#
+########################################################################
 def remove_nodeseg_in():
     
     if w.Entry2.get()=='':
@@ -598,17 +620,20 @@ def _plot_nodfile():
  
 def _plot_segfile():
   
-    if 'seg' in w.FIGS:
-        w.FIGS['seg'][0].remove()
-        w.FIGS['seg'][1][0].remove()
+    try:
+        if 'seg' in w.FIGS:
+            w.FIGS['seg'][0].remove()
+            w.FIGS['seg'][1][0].remove()
+    except:
+        pass
 
-
-    ptarray=np.hstack([[w.segfile[seg][:,0],w.segfile[seg][:,1]] for seg in w.segfile]).T
-    tmparray=[list(zip(w.segfile[seg][:,0],w.segfile[seg][:,1])) for seg in w.segfile]
-    w.linecollection=LC(tmparray,color='b')
-    w.FIGS['seg']=[w.linecollection,
-                  w.ax.plot(ptarray[:,0],ptarray[:,1],'b.')]
-    w.ax.add_collection(w.linecollection)
+    if hasattr(w,'segfile'):
+        ptarray=np.hstack([[w.segfile[seg][:,0],w.segfile[seg][:,1]] for seg in w.segfile]).T
+        tmparray=[list(zip(w.segfile[seg][:,0],w.segfile[seg][:,1])) for seg in w.segfile]
+        w.linecollection=LC(tmparray,color='b')
+        w.FIGS['seg']=[w.linecollection,
+                      w.ax.plot(ptarray[:,0],ptarray[:,1],'b.')]
+        w.ax.add_collection(w.linecollection)
     
     w.figure.canvas.draw()
 
@@ -687,21 +712,7 @@ def toggle_segfile():
     Toggle segfile
     """
     
-    toggle_plot('seg')
-    
-    #try:
-        #if w.segfileTF:
-            #w.segfileFIG[0].set_visible(False)
-            #w.segfileFIG[1][0].set_visible(False)
-            #w.segfileTF=False
-        #else:
-            #w.segfileFIG[0].set_visible(True)
-            #w.segfileFIG[1][0].set_visible(True)
-            #w.segfileTF=True
-            
-        #w.figure.canvas.draw()
-    #except AttributeError:
-        #w.CB2var.set(0)    
+    toggle_plot('seg')  
     
     return
     
@@ -711,22 +722,27 @@ def toggle_neifile():
     """
     
     toggle_plot('nei')
-    #try:
-        #if w.neifileTF:
-            #w.neifileFIG[0].set_visible(False)
-            #w.neifileFIG[1].set_visible(False)
-            #w.neifileTF=False
-        #else:
-            #w.neifileFIG[0].set_visible(True)
-            #w.neifileFIG[1].set_visible(True)
-            #w.neifileTF=True
-            
-        #w.figure.canvas.draw()
-    #except AttributeError:
-        #w.CB3var.set(0)    
+    
+    return
+
+def toggle_nodfile():
+    """
+    Toggle nodfile
+    """
+
+    toggle_plot('nod')   
     
     return
     
+def toggle_llzfile():
+    """
+    Toggle llzfile
+    """
+        
+    toggle_plot('llz',True)   
+    
+    return
+        
 def toggle_neifilecolor():
     """
     Toggle neifile depth
@@ -750,25 +766,7 @@ def toggle_neifilecolor():
     except AttributeError:
         w.CBVar['neic'].set(0)    
     
-    return
-    
-def toggle_nodfile():
-    """
-    Toggle nodfile
-    """
-
-    toggle_plot('nod')   
-    
-    return
-    
-def toggle_llzfile():
-    """
-    Toggle llzfile
-    """
-        
-    toggle_plot('llz',True)   
-    
-    return
+    return    
  
 def toggle_plot(name,color=False):
     """
@@ -793,10 +791,9 @@ def toggle_plot(name,color=False):
             
         w.figure.canvas.draw()
     except AttributeError:
-        w.CBVar[name].set(0)  
+        w.CBVar[name].set(0)     
     
     
-
 def getcb(datain):
     """
     Get colorbar min max from interface. Use those values default min and max of datain
@@ -813,15 +810,14 @@ def getcb(datain):
         cmin = float(w.Entry42.get())
        
     return cmin, cmax
-    
+        
 
 def redraw_llz():
     
     if 'llz' in w.FIGS:
         _plot_llzfile()
         
-    return
-    
+    return    
 
 def redraw_nei():
 
@@ -924,9 +920,9 @@ def load_coastline():
     """
     Load and plot a coastline.
     """
-    filename=''
+    filename=()
     filename=askopenfilename(initialdir=w.init_dir)
-    if filename != '':
+    if filename != ():
         w.coastline=ut.load_coastline(filename=filename)
         w.TF['coast']=True
         w.CBVar['coast'].set(1)
@@ -942,7 +938,6 @@ def load_coastline():
         #for i,line in enumerate(w.coastline):
             #if isin(axis,np.array(line)):
                 #yep+=[i]
-        
         
         w.FIGS['coast']=PC(w.coastline,facecolor = '0.75',edgecolor='k',linewidths=1) 
         w.ax.add_collection(w.FIGS['coast'])
