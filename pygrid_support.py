@@ -295,6 +295,22 @@ def smooth():
 #   misc functions
 #
 ########################################################################    
+def clear_tmp_seg():
+    
+    if not hasattr(w,'haveAreaSEG'):
+        w.haveAreaSEG=False
+    if w.haveAreaSEG:
+        w.areaFIGSEG.remove()
+        w.figure.canvas.draw()
+        w.haveAreaSEG=False
+        
+    if hasattr(w,'cid_seg'):
+        w.figure.canvas.mpl_disconnect(w.cid_seg)
+    if hasattr(w,'tempSeg'):
+        del(w.tempSeg)
+
+
+
 def select_seg():
 
     def set_seg():
@@ -341,6 +357,58 @@ def select_seg():
         w.figure.canvas.mpl_disconnect(w.cid_seg)
     
     w.cid_seg = w.Canvas1.mpl_connect('button_press_event',pick_seg)
+    
+    
+def create_seg():   
+    
+    def onclick_handler2(event):
+        draw=False
+        if event.button==1:
+            w.tempSeg=np.vstack([w.tempSeg,np.array([event.xdata,event.ydata])])
+            w.SegPts+=1
+            draw=True
+        elif event.button==3:
+            if w.SegPts>0:
+                w.tempSeg=w.tempSeg[:w.SegPts,:]
+                w.SegPts-=1
+                draw=True
+        elif event.button==2:
+            w.figure.canvas.mpl_disconnect(w.cid_seg)
+            if not hasattr(w,'segfile'):
+                w.segfile=collections.OrderedDict()
+                w.segfile['1']=np.vstack([w.tempSeg[1:,:],w.tempSeg[1,:]])
+                w.TF['seg']=True
+                w.CBVar['seg'].set(1)
+            else:
+                itm=np.array([int(seg) for seg in w.segfile.keys()])
+                maxitm=itm.max()
+                w.segfile[str(maxitm+1)]=np.vstack([w.tempSeg[1:,:],w.tempSeg[1,:]])
+                
+            clear_tmp_seg()    
+            _plot_segfile()                
+                
+        else:
+            print('Unknown button')
+        
+        if draw:   
+            if w.haveAreaSEG:
+                w.areaFIGSEG.remove()         
+            w.areaFIGSEG=mpatches.Polygon(w.tempSeg[1:,:],facecolor='b',edgecolor='k',alpha=.35)
+            w.ax.add_patch(w.areaFIGSEG)
+            w.figure.canvas.draw()
+            w.haveAreaSEG=True
+            
+        return
+              
+    
+    clear_tmp_seg()
+        
+    w.tempSeg=np.array([0,0])
+    w.SegPts=0
+    
+    w.cid_seg = w.Canvas1.mpl_connect('button_press_event',onclick_handler2)  
+    
+    return 
     
 def remove_nodeseg_in():
     
