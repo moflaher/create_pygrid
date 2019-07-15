@@ -18,6 +18,7 @@ except ImportError:
     py3 = 1
 
 import pygrid_support
+import options
 import matplotlib as mpl
 mpl.rcParams['agg.path.chunksize'] = 10000
 from matplotlib.figure import Figure
@@ -85,6 +86,11 @@ class New_Toplevel_1:
         self.style.configure('.',foreground=self._fgcolor)
         self.style.map('.',background=
             [('selected', self._compcolor), ('active',self._ana2color)])
+            
+            
+        self.config=options.defaultConfig()
+        options.loadConfig(self.config)
+        
 
         top.geometry("1026x675+477+155")
         top.title("Pygrid")
@@ -219,7 +225,23 @@ class New_Toplevel_1:
                 command=pygrid_support.load_llzfile,
                 foreground="#000000",
                 label="Load llzfile")
-       
+                
+
+        
+        self.options = Menu(top,tearoff=0)
+        self.menubar.add_cascade(menu=self.options,
+                activebackground="#d9d9d9",
+                activeforeground="#000000",
+                background="#d9d9d9",
+                foreground="#000000",
+                label="Options")
+        self.options.add_command(
+                activebackground="#d8d8d8",
+                activeforeground="#000000",
+                background="#d9d9d9",
+                command=self.getMbox,
+                foreground="#000000",
+                label="Plot Options")  
                 
         self.help = Menu(top,tearoff=0)
         self.menubar.add_cascade(menu=self.help,
@@ -699,6 +721,10 @@ class New_Toplevel_1:
         self.Button40.configure(activebackground="#d9d9d9")
         self.Button40.configure(text='''Redraw nei''')
         self.Button40.configure(command=pygrid_support.redraw_nei)
+
+    def getMbox(self):
+        Mbox=options.Mbox(self.config)
+        Mbox.root=root
 
 
 if __name__ == '__main__':

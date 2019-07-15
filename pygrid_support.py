@@ -685,7 +685,7 @@ def _plot_neifilecolor():
             w.neifile=ut.get_sidelength(w.neifile)
         cmin, cmax = getcb(w.neifile['sl']) 
           
-    w.FIGS['neic'][w.neiplot]=w.ax.tripcolor(w.neifile['trigrid'], w.neifile[dname],vmin=cmin,vmax=cmax,visible=state)
+    w.FIGS['neic'][w.neiplot]=w.ax.tripcolor(w.neifile['trigrid'], w.neifile[dname],vmin=cmin,vmax=cmax,visible=state,cmap=w.config['plot']['colormap'])
     w.cb[w.neiplot]=w.figure.colorbar(w.FIGS['neic'][w.neiplot],cax=w.cax)
 
     w.figure.canvas.draw()
