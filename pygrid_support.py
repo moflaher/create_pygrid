@@ -340,7 +340,7 @@ def select_seg():
         if hasattr(w,'segptFIG'):
             w.segptFIG.remove()       
             
-        w.segptFIG=w.ax.scatter(w.segpt[0],w.segpt[1],w.config['seg']['markercolor'],s=float(w.config['seg']['markersize']))
+        w.segptFIG=w.ax.scatter(w.segpt[0],w.segpt[1],c=w.config['seg']['markercolor'],s=float(w.config['seg']['markersize']))
         w.figure.canvas.draw()
         
         if remove:

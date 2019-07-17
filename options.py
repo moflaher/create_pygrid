@@ -187,8 +187,8 @@ class SegOptionBox(object):
             self.config['seg']['markercolor']=e2
             replot=True
         e3=self.e3.get() 
-        if self.config['seg']['color']!=e3:
-            self.config['seg']['color']=e3
+        if self.config['seg']['linecolor']!=e3:
+            self.config['seg']['linecolor']=e3
             replot=True
         e4=self.e4.get() 
         if self.config['seg']['linewidth']!=e4:
@@ -519,7 +519,7 @@ def defaultConfig():
     
     config['seg']=OrderedDict([('markersize', 40),
                                ('markercolor', 'm'),
-                               ('color', 'b'),
+                               ('linecolor', 'b'),
                                ('linewidth', 1),
                                ('linedotsize', 6),
                                ('zorder', 10)])
