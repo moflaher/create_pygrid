@@ -340,7 +340,7 @@ def select_seg():
         if hasattr(w,'segptFIG'):
             w.segptFIG.remove()       
             
-        w.segptFIG=w.ax.scatter(w.segpt[0],w.segpt[1],c='m',s=40)
+        w.segptFIG=w.ax.scatter(w.segpt[0],w.segpt[1],w.config['seg']['markercolor'],s=float(w.config['seg']['markersize']))
         w.figure.canvas.draw()
         
         if remove:
@@ -543,7 +543,7 @@ def neifile(filename = '', axis=False):
         w.neifile=ut.load_nei2fvcom(filename)
         if 'nei' in w.FIGS:
             w.FIGS['nei'].remove()
-        w.FIGS['nei']=w.ax.triplot(w.neifile['trigrid'],color='k',lw=.25)
+        w.FIGS['nei']=w.ax.triplot(w.neifile['trigrid'],color=w.config['nei']['linecolor'],lw=float(w.config['nei']['linewidth']),zorder=int(w.config['nei']['zorder']))
         if axis:
             w.ax.axis([w.neifile['lon'].min(),w.neifile['lon'].max(),w.neifile['lat'].min(),w.neifile['lat'].max()])
         w.TF['nei']=True
@@ -613,7 +613,7 @@ def _plot_nodfile():
     if 'nod' in w.FIGS:
         w.FIGS['nod'].remove()        
        
-    w.FIGS['nod']=w.ax.scatter(w.nodfile[:,0], w.nodfile[:,1], c='g',edgecolor='None')
+    w.FIGS['nod']=w.ax.scatter(w.nodfile[:,0], w.nodfile[:,1],s=float(w.config['nod']['markersize']),c=w.config['nod']['facecolor'],edgecolor=w.config['nod']['edgecolor'],zorder=int(w.config['nod']['zorder']))
     w.figure.canvas.draw()
 
     return
@@ -630,9 +630,9 @@ def _plot_segfile():
     if hasattr(w,'segfile'):
         ptarray=np.hstack([[w.segfile[seg][:,0],w.segfile[seg][:,1]] for seg in w.segfile]).T
         tmparray=[list(zip(w.segfile[seg][:,0],w.segfile[seg][:,1])) for seg in w.segfile]
-        w.linecollection=LC(tmparray,color='b')
+        w.linecollection=LC(tmparray,color=w.config['seg']['linecolor'],linewidth=float(w.config['seg']['linewidth']),zorder=int(w.config['seg']['zorder']))
         w.FIGS['seg']=[w.linecollection,
-                      w.ax.plot(ptarray[:,0],ptarray[:,1],'b.')]
+                      w.ax.plot(ptarray[:,0],ptarray[:,1],w.config['seg']['linecolor']+'.',markersize=float(w.config['seg']['linedotsize']),zorder=int(w.config['seg']['zorder']))]
         w.ax.add_collection(w.linecollection)
     
     w.figure.canvas.draw()
@@ -649,7 +649,7 @@ def _plot_llzfile():
         w.cb={}
 
     cmin, cmax = getcb(w.llzfile[:,2])    
-    w.FIGS['llz']=w.ax.scatter(w.llzfile[:,0], w.llzfile[:,1], c=w.llzfile[:,2],edgecolor='None',vmin=cmin,vmax=cmax,visible=state)
+    w.FIGS['llz']=w.ax.scatter(w.llzfile[:,0], w.llzfile[:,1],s=float(w.config['llz']['markersize']),cmap=w.config['llz']['colormap'], c=w.llzfile[:,2],edgecolor=w.config['llz']['edgecolor'],zorder=int(w.config['llz']['zorder']),vmin=cmin,vmax=cmax,visible=state)
     w.cb['llz']=w.figure.colorbar(w.FIGS['llz'],cax=w.cax)
     
     w.figure.canvas.draw()
@@ -685,7 +685,7 @@ def _plot_neifilecolor():
             w.neifile=ut.get_sidelength(w.neifile)
         cmin, cmax = getcb(w.neifile['sl']) 
           
-    w.FIGS['neic'][w.neiplot]=w.ax.tripcolor(w.neifile['trigrid'], w.neifile[dname],vmin=cmin,vmax=cmax,visible=state,cmap=w.config['plot']['colormap'])
+    w.FIGS['neic'][w.neiplot]=w.ax.tripcolor(w.neifile['trigrid'], w.neifile[dname],vmin=cmin,vmax=cmax,visible=state,cmap=w.config['nei']['colormap'],zorder=int(w.config['nei']['cm_zorder']))
     w.cb[w.neiplot]=w.figure.colorbar(w.FIGS['neic'][w.neiplot],cax=w.cax)
 
     w.figure.canvas.draw()
@@ -938,8 +938,11 @@ def load_coastline():
         #for i,line in enumerate(w.coastline):
             #if isin(axis,np.array(line)):
                 #yep+=[i]
-        
-        w.FIGS['coast']=PC(w.coastline,facecolor = '0.75',edgecolor='k',linewidths=1) 
+               
+        if w.config['coast']['fill']:
+            w.FIGS['coast']=PC(w.coastline,facecolor = w.config['coast']['facecolor'],edgecolor=w.config['coast']['edgecolor'],linewidths=float(w.config['coast']['linewidth']),zorder=int(w.config['coast']['zorder'])) 
+        else:
+            w.FIGS['coast']=LC(w.coastline,color=w.config['coast']['edgecolor'],linewidths=float(w.config['coast']['linewidth']),zorder=int(w.config['coast']['zorder'])) 
         w.ax.add_collection(w.FIGS['coast'])
         w.figure.canvas.draw()
             

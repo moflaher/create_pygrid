@@ -87,10 +87,10 @@ class New_Toplevel_1:
         self.style.map('.',background=
             [('selected', self._compcolor), ('active',self._ana2color)])
             
-            
+        #init options and load .config file    
         self.config=options.defaultConfig()
-        options.loadConfig(self.config)
-        
+        options.loadConfig(self.config)    
+        #print(self.config['coast']    )
 
         top.geometry("1026x675+477+155")
         top.title("Pygrid")
@@ -239,9 +239,37 @@ class New_Toplevel_1:
                 activebackground="#d8d8d8",
                 activeforeground="#000000",
                 background="#d9d9d9",
-                command=self.getMbox,
+                command=self.getCoastOptionBox,
                 foreground="#000000",
-                label="Plot Options")  
+                label="Coastline Options")  
+        self.options.add_command(
+                activebackground="#d8d8d8",
+                activeforeground="#000000",
+                background="#d9d9d9",
+                command=self.getSegOptionBox,
+                foreground="#000000",
+                label="Seg Options")  
+        self.options.add_command(
+                activebackground="#d8d8d8",
+                activeforeground="#000000",
+                background="#d9d9d9",
+                command=self.getNeiOptionBox,
+                foreground="#000000",
+                label="Nei Options")  
+        self.options.add_command(
+                activebackground="#d8d8d8",
+                activeforeground="#000000",
+                background="#d9d9d9",
+                command=self.getNodOptionBox,
+                foreground="#000000",
+                label="Nod Options")  
+        self.options.add_command(
+                activebackground="#d8d8d8",
+                activeforeground="#000000",
+                background="#d9d9d9",
+                command=self.getllzOptionBox,
+                foreground="#000000",
+                label="llz Options")    
                 
         self.help = Menu(top,tearoff=0)
         self.menubar.add_cascade(menu=self.help,
@@ -722,9 +750,21 @@ class New_Toplevel_1:
         self.Button40.configure(text='''Redraw nei''')
         self.Button40.configure(command=pygrid_support.redraw_nei)
 
-    def getMbox(self):
-        Mbox=options.Mbox(self.config)
-        Mbox.root=root
+    def getCoastOptionBox(self):
+        CoastBox=options.CoastOptionBox(self.config)
+        CoastBox.root=root
+    def getSegOptionBox(self):
+        SegBox=options.SegOptionBox(self.config)
+        SegBox.root=root
+    def getNeiOptionBox(self):
+        NeiBox=options.NeiOptionBox(self.config)
+        NeiBox.root=root
+    def getNodOptionBox(self):
+        NodBox=options.NodOptionBox(self.config)
+        NodBox.root=root
+    def getllzOptionBox(self):
+        llzBox=options.llzOptionBox(self.config)
+        llzBox.root=root
 
 
 if __name__ == '__main__':
