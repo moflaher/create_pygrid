@@ -196,7 +196,7 @@ class SegOptionBox(object):
             replot=True
         e5=self.e5.get() 
         if self.config['seg']['linedotsize']!=e5:
-            self.config['seg']['linedotsize']=e54
+            self.config['seg']['linedotsize']=e5
             replot=True
         e6=self.e6.get() 
         if self.config['seg']['zorder']!=e6:
