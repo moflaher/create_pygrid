@@ -12,6 +12,7 @@ from matplotlib.collections import LineCollection as LC
 from matplotlib.collections import PolyCollection as PC
 import matplotlib.pyplot as plt
 import matplotlib.tri as mplt
+import matplotlib.dates as dates
 import collections
 import copy
 
@@ -233,7 +234,7 @@ def load_nei2fvcom(filename):
     data=get_nv(data)
     
     # ncdatasort to make typically structures
-    data=ncdatasort(data)     
+    data=ncdatasort_old(data)     
         
     return data
 
@@ -499,7 +500,7 @@ def get_nv(neifile):
     return neifile
     
     
-def ncdatasort(data,trifinder=False,uvhset=True):
+def ncdatasort_old(data,trifinder=False,uvhset=True):
     """
     From the nc data provided, common variables are produced.
 

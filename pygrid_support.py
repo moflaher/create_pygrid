@@ -747,7 +747,7 @@ def _plot_fvcomfile():
         w.FIGS['fvcom']={}
     if not hasattr(w,'cb'):
         w.cb={}
-        
+    #print(w.fvcom['lon'][0],w.fvcom['lat'][0])
         
     state = True  
     try:
