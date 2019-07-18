@@ -313,7 +313,7 @@ class NeiOptionBox(object):
             replot=True
         
         if replotc:
-            pygrid_support._plot_neifilecolor  
+            pygrid_support._plot_neifilecolor()
         if replot:
             pygrid_support.TODO 
     
@@ -493,7 +493,7 @@ class llzOptionBox(object):
             replot=True
         
         if replot:
-            pygrid_support._plot_llzfile  
+            pygrid_support._plot_llzfile()  
     
     def saveConfig(self):
         '''Set and save the config file'''  
@@ -502,7 +502,114 @@ class llzOptionBox(object):
         saveConfigFile(self.config)   
 
 
-            
+class fvcomOptionBox(object):
+
+    root = None
+
+    def __init__(self, config):
+        """
+        Create the fvcomOptionBox
+        """        
+        self.config=config
+        
+        tki = tkinter
+        self.top = tki.Toplevel(NeiOptionBox.root)
+        self.top.geometry("400x500+650+250")
+        self.top.title("FVCOM Plot Options")
+        self.top.configure(highlightcolor="black")
+
+        self.frm = tki.Frame(self.top, borderwidth=4, relief='ridge')
+        self.frm.pack(fill='both', expand=True)
+
+        rh = 0.055
+        rw = 0.85
+        rw2 = 0.4 
+        rw3 = 0.33       
+        sh = 0.06
+        ry = 0.01
+        
+        label(self.frm,0.650,ry,rh,rw3,'''Override''')
+
+        ry += sh
+        label(self.frm,0.0,ry,rh,rw3,'''Colormap''')
+
+        self.CMMenuVar = tki.StringVar(self.root)
+        self.CMChoices={'viridis','jet','seismic'}
+        self.CMMenuVar.set(self.config['fvcom']['colormap'])
+        self.CMMenu = tki.OptionMenu(self.frm,self.CMMenuVar,*self.CMChoices)
+        self.CMMenu.place(relx=0.2850, rely=ry, relheight=rh, relwidth=rw3)
+        
+        self.e1=entry(self.frm,0.65,ry,rh,rw3,'')
+        
+        ry += sh
+        label(self.frm,0.0,ry,rh,rw2,'''Zorder''')
+        self.e2=entry(self.frm,0.5,ry,rh,rw2,self.config['fvcom']['zorder'])
+        
+        # ry += sh
+        # label(self.frm,0.0,ry,rh,rw2,'''Linewidth''')
+        # self.e3=entry(self.frm,0.5,ry,rh,rw2,self.config['fvcom']['linewidth'])
+        
+        # ry += sh
+        # label(self.frm,0.0,ry,rh,rw2,'''Linecolor''')
+        # self.e4=entry(self.frm,0.5,ry,rh,rw2,self.config['fvcom']['linecolor'])
+        
+        # ry += sh
+        # label(self.frm,0.0,ry,rh,rw2,'''Zorder''')
+        # self.e5=entry(self.frm,0.5,ry,rh,rw2,self.config['fvcom']['zorder'])
+
+
+        
+
+
+        ################################################################
+        #Save close apply buttons
+        ################################################################
+        self.b_save=button(self.frm,.01+sh*0.1,.925,rh,rw3*.95,'''Save''',self.saveConfig)
+        self.b_cancel=button(self.frm,.01+rw3*.95+sh*.25,.925,rh,rw3*.95,'''Close''',self.top.destroy)
+        self.b_submit=button(self.frm,.01+rw3*2*.95+sh*.4,.925,rh,rw3*.95,'''Apply''',self.setConfig)
+
+
+    def setConfig(self):
+        replot=False
+        
+        e1=self.e1.get() 
+        if e1 != '' and self.config['fvcom']['colormap']!=e1:
+            try:
+                mpl.cm.get_cmap(e1)            
+                self.config['fvcom']['colormap']=e1
+                replot=True
+            except ValueError:
+                print('Invalid Colormap')
+        elif self.config['fvcom']['colormap']!=self.CMMenuVar.get():
+            self.config['fvcom']['colormap']=self.CMMenuVar.get()
+            replot=True
+                       
+        e2=self.e2.get() 
+        if self.config['fvcom']['zorder']!=e2:
+            self.config['fvcom']['zorder']=e2
+            replot=True            
+        # e3=self.e3.get() 
+        # if self.config['fvcom']['linewidth']!=e3:
+            # self.config['fvcom']['linewidth']=e3
+            # replot=True
+        # e4=self.e4.get() 
+        # if self.config['fvcom']['linecolor']!=e4:
+            # self.config['fvcom']['linecolor']=e4
+            # replot=True
+        # e5=self.e5.get() 
+        # if self.config['fvcom']['zorder']!=e5:
+            # self.config['fvcom']['zorder']=e5
+            # replot=True
+        
+        if replot:
+            pygrid_support._plot_fvcomfile()  
+
+    
+    def saveConfig(self):
+        '''Set and save the config file'''  
+        
+        self.setConfig()        
+        saveConfigFile(self.config)     
             
 
 
@@ -539,7 +646,9 @@ def defaultConfig():
                                ('markersize', 36.0),
                                ('edgecolor', 'None'),
                                ('zorder', 10)])
-
+     
+    config['fvcom']=OrderedDict([('colormap', 'viridis'),
+                                 ('zorder', 10)])
     
     return config
     

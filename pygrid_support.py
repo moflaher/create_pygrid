@@ -15,6 +15,7 @@ import matplotlib.patches as mpatches
 import matplotlib.path as path
 from matplotlib.collections import LineCollection as LC
 from matplotlib.collections import PolyCollection as PC
+import seawater as sw
 
 try:
     from Tkinter import *
@@ -614,7 +615,10 @@ def fvcomfile(filename = '', axis=False):
         w.fvcom=ut.loadnc(filename[:r],filename[r:])
         #print(w.fvcom.keys())
         
-        check=np.array(['ua','va','u','v','ww','uvh','wet_cells_prev_int','zeta','wet_cells_prev_ext','h_center','omega','wet_nodes','tauc','h','partition','wet_nodes_prev_int','wet_cells'])
+        check=np.array(['ua','va','u','v','ww','uvh','wet_cells_prev_int',
+                        'zeta','wet_cells_prev_ext','h_center','omega',
+                        'wet_nodes','tauc','h','partition','wet_nodes_prev_int',
+                        'wet_cells','temp','salinity'])
         w.fvcom['pable_txt']=np.array([])
         w.fvcom['pable']=np.array([])
         for key in w.fvcom.keys():
@@ -786,21 +790,42 @@ def _plot_fvcomfile():
         w.fvcom['speed_da']=np.sqrt(w.fvcom['ua'][w.time,:]**2+w.fvcom['va'][w.time,:]**2)        
     elif (w.fvcomplot == 'speed' and w.timeTF and w.lvlTF):
         dname='speed'
-        w.fvcom['speed']=np.sqrt(w.fvcom['u'][w.time,w.lvl,:]**2+w.fvcom['v'][w.time,w.lvl,:]**2)        
+        w.fvcom['speed']=np.sqrt(w.fvcom['u'][w.time,w.lvl,:]**2+w.fvcom['v'][w.time,w.lvl,:]**2)  
+    elif (w.fvcomplot == 'vorticity_da' and w.timeTF):
+        dname='field'
+        i=w.time
+        dudy = w.fvcom['a2u'][0,:]*w.fvcom['ua'][i,:]+w.fvcom['a2u'][1,:]*w.fvcom['ua'][i,w.fvcom['nbe'][:,0]] +\
+                w.fvcom['a2u'][2,:]*w.fvcom['ua'][i,w.fvcom['nbe'][:,1]]+w.fvcom['a2u'][3,:]*w.fvcom['ua'][i,w.fvcom['nbe'][:,2]]
+        dvdx = w.fvcom['a1u'][0,:]*w.fvcom['va'][i,:]+w.fvcom['a1u'][1,:]*w.fvcom['va'][i,w.fvcom['nbe'][:,0]] +\
+               w.fvcom['a1u'][2,:]*w.fvcom['va'][i,w.fvcom['nbe'][:,1]]+w.fvcom['a1u'][3,:]*w.fvcom['va'][i,w.fvcom['nbe'][:,2]]
+        w.fvcom[dname] = dvdx - dudy
+    elif (w.fvcomplot == 'vorticity' and w.timeTF and w.lvlTF):
+        dname='field'
+        i=w.time; layer=w.lvl
+        dudy = w.fvcom['a2u'][0,:]*w.fvcom['u'][i,layer,:]+w.fvcom['a2u'][1,:]*w.fvcom['u'][i,layer,w.fvcom['nbe'][:,0]] +\
+               w.fvcom['a2u'][2,:]*w.fvcom['u'][i,layer,w.fvcom['nbe'][:,1]]+w.fvcom['a2u'][3,:]*w.fvcom['u'][i,layer,w.fvcom['nbe'][:,2]]
+        dvdx = w.fvcom['a1u'][0,:]*w.fvcom['v'][i,layer,:]+w.fvcom['a1u'][1,:]*w.fvcom['v'][i,layer,w.fvcom['nbe'][:,0]] +\
+               w.fvcom['a1u'][2,:]*w.fvcom['v'][i,layer,w.fvcom['nbe'][:,1]]+w.fvcom['a1u'][3,:]*w.fvcom['v'][i,layer,w.fvcom['nbe'][:,2]]
+        w.fvcom[dname] = dvdx - dudy
+    elif (w.fvcomplot == 'density' and w.timeTF and w.lvlTF):
+        dname='field'
+        i=w.etime; layer=w.elvl
+        pres = sw.pres(w.fvcom['h']+w.fvcom['zeta'][i,:],w.fvcom['lat'])
+        w.fvcom[dname] = sw.dens(w.fvcom['salinity'][i,layer,:],w.fvcom['temp'][i,layer,:],pres)   
     else:
         dname='field'
         shp=np.shape(w.fvcom[w.fvcomplot])
         tTF=(len(w.fvcom['time']) in shp)
         lTF=(w.fvcom['dims']['siglev'] in shp) or (w.fvcom['dims']['siglay'] in shp)
         if (tTF==False and lTF==False):
-            w.fvcom['field']=w.fvcom[w.fvcomplot]
+            w.fvcom[dname]=w.fvcom[w.fvcomplot]
         elif (tTF==True and lTF==False):
-            w.fvcom['field']=w.fvcom[w.fvcomplot][w.time,:]
+            w.fvcom[dname]=w.fvcom[w.fvcomplot][w.time,:]
         else:
-            w.fvcom['field']=w.fvcom[w.fvcomplot][w.time,w.lvl,:]
+            w.fvcom[dname]=w.fvcom[w.fvcomplot][w.time,w.lvl,:]
         
     cmin, cmax = getcb(w.fvcom[dname])          
-    w.FIGS['fvcom'][w.fvcomplot]=w.ax.tripcolor(w.fvcom['trigrid'], w.fvcom[dname],vmin=cmin,vmax=cmax,visible=state,cmap=w.config['nei']['colormap'],zorder=int(w.config['nei']['cm_zorder']))
+    w.FIGS['fvcom'][w.fvcomplot]=w.ax.tripcolor(w.fvcom['trigrid'], w.fvcom[dname],vmin=cmin,vmax=cmax,visible=state,cmap=w.config['fvcom']['colormap'],zorder=int(w.config['fvcom']['zorder']))
     w.cb[w.fvcomplot]=w.figure.colorbar(w.FIGS['fvcom'][w.fvcomplot],cax=w.cax)
 
     w.figure.canvas.draw()

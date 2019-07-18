@@ -156,6 +156,7 @@ class New_Toplevel_1:
         add_command(self.options,self.getNeiOptionBox,"Nei Options")
         add_command(self.options,self.getNodOptionBox,"Nod Options")
         add_command(self.options,self.getllzOptionBox,"llz Options")
+        add_command(self.options,self.getFvcomOptionBox,"Fvcom Options")
                
         self.help = Menu(top,tearoff=0)
         add_cascade(self.menubar,self.help,"Help")
@@ -369,7 +370,7 @@ class New_Toplevel_1:
 
         
         self.FVCOMMenuVar = StringVar(root)
-        self.FVCOMChoices={'speed_da','speed','dhh','sidelength','vorticity'}
+        self.FVCOMChoices={'speed_da','speed','dhh','sidelength','vorticity_da','vorticity','density'}
         self.FVCOMMenuVar.set('speed_da')
         self.FVCOMMenu = OptionMenu(self.Frame7,self.FVCOMMenuVar,*self.FVCOMChoices)
         self.FVCOMMenu.place(relx=0.075,rely=ry+sh*3,relheight=rh,relwidth=rw)
@@ -438,6 +439,9 @@ class New_Toplevel_1:
     def getllzOptionBox(self):
         llzBox=options.llzOptionBox(self.config)
         llzBox.root=root
+    def getFvcomOptionBox(self):
+        fvcomBox=options.fvcomOptionBox(self.config)
+        fvcomBox.root=root
 
 
 if __name__ == '__main__':

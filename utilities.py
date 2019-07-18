@@ -170,33 +170,7 @@ def load_coastline(filename):
         ticksout - Face the axis ticksout  (R style - default False) 
     """
    
-    #color='k'
-    #lw=1
-    #ls='solid'
-    #filename='mid_nwatl6c.nc'
-    #fcolor='0.75'
-    #fill=False
-
-    #if kwargs is not None:
-        #for key, value in kwargs.iteritems():            
-            #if (key=='color'):
-                #color=value
-            #if (key=='lw'):
-                #lw=value
-            #if (key=='ls'):
-                #ls=value    
-            #if (key=='filename'):
-                #filename=value   
-            #if (key=='fill'):
-                #fill=value 
-            #if (key=='fcolor'):
-                #fcolor=value
-
-    #_base_dir = os.path.realpath(inspect.stack()[0][1])
-    #idx=_base_dir.rfind('/')
-
-
-    sl=loadnc('',filename)
+    sl=loadnc('',filename,False)
 
     idx=np.where(sl['count']!=0)[0]
     sl['count']=sl['count'][idx]
@@ -205,15 +179,6 @@ def load_coastline(filename):
     tmparray=[list(zip(sl['lon'][sl['start'][i]:(sl['start'][i]+sl['count'][i])],sl['lat'][sl['start'][i]:(sl['start'][i]+sl['count'][i])])) for i in range(0,len(sl['start']))]
 
     return np.array(tmparray)
-
-    #if fill==True:
-        #coastseg=PC(tmparray,facecolor = fcolor,edgecolor=color,linewidths=lw)
-    #else:
-        #coastseg=LC(tmparray,linewidths = lw,linestyles=ls,color=color)    
-
-    #axin.add_collection(coastseg)
-    
-    #return coastseg
     
     
 def load_neifile(neifilename=None):
