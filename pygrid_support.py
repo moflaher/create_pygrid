@@ -602,6 +602,51 @@ def llzfile(filename = '' , axis=False, flip=False):
         w.figure.canvas.draw()
             
     return
+    
+    
+def fvcomfile(filename = '', axis=False):
+    """
+    Load and plot an fvcomfile.
+    """
+
+    if filename != '':
+        r=filename.rfind('/')+1
+        w.fvcom=ut.loadnc(filename[:r],filename[r:])
+        #print(w.fvcom.keys())
+        
+        check=np.array(['ua','va','u','v','ww','uvh','wet_cells_prev_int','zeta','wet_cells_prev_ext','h_center','omega','wet_nodes','tauc','h','partition','wet_nodes_prev_int','wet_cells'])
+        w.fvcom['pable_txt']=np.array([])
+        w.fvcom['pable']=np.array([])
+        for key in w.fvcom.keys():
+            if key in check:     
+                w.fvcom['pable_txt']=np.append(w.fvcom['pable_txt'],key + " - {}".format(np.shape(w.fvcom[key])))           
+                w.fvcom['pable']=np.append(w.fvcom['pable'],key)
+        # for key in w.fvcom.keys():
+            # if w.fvcom['dims']['nele'] in np.shape(w.fvcom[key]):
+                # w.fvcom['pable']=np.append(w.fvcom['pable'],key + " - {}".format(np.shape(w.fvcom[key])))
+            # if w.fvcom['dims']['node'] in np.shape(w.fvcom[key]):
+                # w.fvcom['pable']=np.append(w.fvcom['pable'],key + " - {}".format(np.shape(w.fvcom[key])))  
+        
+        for i in w.fvcom['pable_txt']:
+            w.listbox.insert(END, i)
+        
+        w.timemin.configure(text='0')
+        w.timemax.configure(text=str(len(w.fvcom['time'])))
+        
+        w.lvlmin.configure(text='0')
+        w.lvlmax.configure(text=str(w.fvcom['dims']['siglev']))
+                
+        _plot_fvcomfile()
+
+        w.cax.set_visible(True)
+        if axis:
+            w.ax.axis([w.fvcom['lon'].min(),w.fvcom['lon'].max(),w.fvcom['lat'].min(),w.fvcom['lat'].max()])        
+        w.TF['fvcom']=True
+        w.caxTF=True
+        w.CBVar['fvcom'].set(1)
+        w.figure.canvas.draw()
+            
+    return
  
 ########################################################################
 #
@@ -691,6 +736,76 @@ def _plot_neifilecolor():
     w.figure.canvas.draw()
 
     return
+    
+def _plot_fvcomfile():
+    
+    if 'fvcom' not in w.FIGS:
+        w.FIGS['fvcom']={}
+    if not hasattr(w,'cb'):
+        w.cb={}
+        
+        
+    state = True  
+    try:
+        if w.fvcomplot in w.FIGS['fvcom']:
+            w.FIGS['fvcom'][w.fvcomplot].remove()
+            state = w.TF['fvcom']
+    except:
+        w.fvcomplot=''
+  
+
+    if w.overmenu.get()!='':
+        if w.overmenu.get() in w.fvcom['pable']:
+            w.fvcomplot=w.overmenu.get()
+    else:
+        w.fvcomplot = w.FVCOMMenuVar.get()   
+    
+    if w.etime!='':
+        w.timeTF=True
+        w.time=int(w.etime.get())
+    else:
+        w.timeTF=False
+    if w.elvl!='':
+        w.lvlTF=True
+        w.lvl=int(w.elvl.get())
+    else:
+        w.lvlTF=False        
+
+    #print(w.fvcomplot)
+
+    if w.fvcomplot == 'dhh':
+        dname='dhh'
+        if w.fvcomplot not in w.fvcom:
+            w.fvcom=ut.get_dhh(w.fvcom)
+    elif w.fvcomplot == 'sidelength':
+        dname='sl'
+        if w.fvcomplot not in w.fvcom:
+            w.fvcom=ut.get_sidelength(w.fvcom)
+    elif (w.fvcomplot == 'speed_da' and w.timeTF):
+        dname='speed_da'
+        w.fvcom['speed_da']=np.sqrt(w.fvcom['ua'][w.time,:]**2+w.fvcom['va'][w.time,:]**2)        
+    elif (w.fvcomplot == 'speed' and w.timeTF and w.lvlTF):
+        dname='speed'
+        w.fvcom['speed']=np.sqrt(w.fvcom['u'][w.time,w.lvl,:]**2+w.fvcom['v'][w.time,w.lvl,:]**2)        
+    else:
+        dname='field'
+        shp=np.shape(w.fvcom[w.fvcomplot])
+        tTF=(len(w.fvcom['time']) in shp)
+        lTF=(w.fvcom['dims']['siglev'] in shp) or (w.fvcom['dims']['siglay'] in shp)
+        if (tTF==False and lTF==False):
+            w.fvcom['field']=w.fvcom[w.fvcomplot]
+        elif (tTF==True and lTF==False):
+            w.fvcom['field']=w.fvcom[w.fvcomplot][w.time,:]
+        else:
+            w.fvcom['field']=w.fvcom[w.fvcomplot][w.time,w.lvl,:]
+        
+    cmin, cmax = getcb(w.fvcom[dname])          
+    w.FIGS['fvcom'][w.fvcomplot]=w.ax.tripcolor(w.fvcom['trigrid'], w.fvcom[dname],vmin=cmin,vmax=cmax,visible=state,cmap=w.config['nei']['colormap'],zorder=int(w.config['nei']['cm_zorder']))
+    w.cb[w.fvcomplot]=w.figure.colorbar(w.FIGS['fvcom'][w.fvcomplot],cax=w.cax)
+
+    w.figure.canvas.draw()
+
+    return
 
 
 ########################################################################
@@ -766,7 +881,32 @@ def toggle_neifilecolor():
     except AttributeError:
         w.CBVar['neic'].set(0)    
     
-    return    
+    return  
+    
+def toggle_fvcom():
+    """
+    Toggle fvcomfile
+    """
+
+    try:
+        if w.TF['fvcom']:
+            w.FIGS['fvcom'][w.fvcomplot].set_visible(False)
+            w.TF['fvcom']=False
+            w.cax.set_visible(False)
+            w.caxTF=False
+        else:
+            if w.fvcomplot not in w.FIGS['fvcom']:
+                _plot_fvcomfile()   
+            w.FIGS['fvcom'][w.fvcomplot].set_visible(True)
+            w.TF['fvcom']=True
+            w.cax.set_visible(True)
+            w.caxTF=True
+            
+        w.figure.canvas.draw()
+    except AttributeError:
+        w.CBVar['fvcom'].set(0)   
+    
+    return
  
 def toggle_plot(name,color=False):
     """
@@ -978,6 +1118,17 @@ def load_llzfile():
     filename=askopenfilename(initialdir=w.init_dir)
     
     llzfile(filename)
+            
+    return
+    
+def load_fvcomfile():
+    """
+    Load and plot an fvcomfile.
+    """
+    filename=''
+    filename=askopenfilename(initialdir=w.init_dir)
+    
+    fvcomfile(filename)
             
     return
 

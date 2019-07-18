@@ -147,6 +147,7 @@ class New_Toplevel_1:
         add_command(self.load,pygrid_support.load_neifile,"Load neifile")
         add_command(self.load,pygrid_support.load_nodfile,"Load nodfile")
         add_command(self.load,pygrid_support.load_llzfile,"Load llzfile")
+        add_command(self.load,pygrid_support.load_fvcomfile,"Load fvcom")
         
         self.options = Menu(top,tearoff=0)
         add_cascade(self.menubar,self.options,"Options")
@@ -170,7 +171,7 @@ class New_Toplevel_1:
         self.Frame3.place(relx=0.0, rely=0.0, relheight=0.07, relwidth=0.78)
         self.Frame3.configure(relief=GROOVE,borderwidth="2",width=805)
 
-        self.types=['coast','seg','nei','nod','llz','neic']
+        self.types=['coast','seg','nei','nod','llz','neic','fvcom']
         self.CBVar={}
         for typ in self.types:
             self.CBVar[typ]=IntVar()
@@ -221,11 +222,16 @@ class New_Toplevel_1:
         
         self.Frame6 = Frame(self.nb)
         self.Frame6.place(relx=0.78, rely=0.0, relheight=0.75, relwidth=0.22)
-        self.Frame6.configure(relief=GROOVE,borderwidth="2",width=215)       
+        self.Frame6.configure(relief=GROOVE,borderwidth="2",width=215)    
+        
+        self.Frame7 = Frame(self.nb)
+        self.Frame7.place(relx=0.78, rely=0.0, relheight=0.75, relwidth=0.22)
+        self.Frame7.configure(relief=GROOVE,borderwidth="2",width=215)        
                 
         self.nb.add(self.Frame2, text='Nodes')
         self.nb.add(self.Frame5, text='Depth')
         self.nb.add(self.Frame6, text='Seg')
+        self.nb.add(self.Frame7, text='FVCOM')
 
         self.nb.place(relx=0.78, rely=0, relheight=0.75, relwidth=0.22)
         
@@ -233,7 +239,8 @@ class New_Toplevel_1:
         
         rh = 0.055
         rw = 0.85
-        rw2 = 0.4        
+        rw2 = 0.4  
+        rw4 = 0.2      
         sh = 0.06
         
         ########################################################################
@@ -340,8 +347,51 @@ class New_Toplevel_1:
         button(self.Frame6,0.075,ry,rh,rw2,'''Select Seg''',pygrid_support.select_seg)      
         self.Entry2=entry(self.Frame6,0.525,ry,rh,rw2,'')        
         button(self.Frame6,0.075,ry+sh*1,rh,rw,'''Create Seg''',pygrid_support.create_seg)
-        button(self.Frame6,0.075,ry+sh*2,rh,rw,'''Delete Seg''',pygrid_support.delete_seg)               
+        button(self.Frame6,0.075,ry+sh*2,rh,rw,'''Delete Seg''',pygrid_support.delete_seg)     
+        
+        ########################################################################
+        #
+        #   FVCOM Tab
+        #
+        ########################################################################
+        ry = 0.01  
+        cbutton(self.Frame7,0.075,ry,rh,rw,'''Show FVCOM''',
+                pygrid_support.toggle_fvcom, self.CBVar['fvcom'])
+                
+        label(self.Frame7,.075,ry+sh,rh,rw4,'''Times:''')
+        self.timemin=label(self.Frame7,.275,ry+sh,rh,rw4,'''na''')
+        self.timemax=label(self.Frame7,.5,ry+sh,rh,rw4,'''na''')
+        self.etime = entry(self.Frame7,0.75,ry+sh,rh,rw4,'0')
+        label(self.Frame7,.075,ry+sh*2,rh,rw4,'''Levels:''')
+        self.lvlmin=label(self.Frame7,.275,ry+sh*2,rh,rw4,'''na''')
+        self.lvlmax=label(self.Frame7,.5,ry+sh*2,rh,rw4,'''na''')
+        self.elvl = entry(self.Frame7,0.75,ry+sh*2,rh,rw4,'0')
 
+        
+        self.FVCOMMenuVar = StringVar(root)
+        self.FVCOMChoices={'speed_da','speed','dhh','sidelength','vorticity'}
+        self.FVCOMMenuVar.set('speed_da')
+        self.FVCOMMenu = OptionMenu(self.Frame7,self.FVCOMMenuVar,*self.FVCOMChoices)
+        self.FVCOMMenu.place(relx=0.075,rely=ry+sh*3,relheight=rh,relwidth=rw)
+        #self.FVCOMMenuVar.trace('w', pygrid_support.TODO)#change_fvcommenu)
+           
+        self.overmenu = entry(self.Frame7,0.075,ry+sh*4,rh,rw,'')
+           
+        self.fsb = Frame(self.Frame7)
+        self.fsb.place(relx=rw+.01,rely=ry+sh*5,relheight=.625, relwidth=0.1)
+
+        self.sb = Scrollbar(self.fsb,orient="vertical")
+        self.sb.pack(side=RIGHT, fill=Y)
+
+        self.listbox = Listbox(self.Frame7)
+        self.listbox.place(relx=0.01,rely=ry+sh*5,relheight=.625,relwidth=rw)
+
+        # attach listbox to scrollbar
+        self.listbox.config(yscrollcommand=self.sb.set)
+        self.sb.config(command=self.listbox.yview)
+        
+        button(self.Frame7,0.075,ry+sh*15.5,rh,rw,'''Plot FVCOM''',pygrid_support._plot_fvcomfile)     
+        
         
         ########################################################################
         #

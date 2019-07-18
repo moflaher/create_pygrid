@@ -22,7 +22,7 @@ import copy
 #
 ########################################################################
 
-def loadnc(datadir, singlename=[], fvcom=True):
+def loadnc(datadir, singlename=[], fvcom=True, suppress=False):
     """
     Loads a .nc  data file
 
@@ -33,68 +33,124 @@ def loadnc(datadir, singlename=[], fvcom=True):
         **fvcom** -- True/False - is the ncfile an fvcom file. 
     """
     if singlename==[]:
-        singlename=glob.glob('*.nc')[0]
+        singlename = glob.glob('*.nc')[0]
 
     # Initialize a dictionary for the data.
     data = {}
     #does the datadir end in / if not append it
     if (len(datadir)>0) and (not datadir.endswith('/')):
-        datadir=datadir+'/'
-    # Store the filepath in case it is needed in the future
+        datadir = datadir + '/'
+    # Store the filepath and data dir in case it is needed in the future
+    data['datadir'] = datadir
     data['filepath'] = datadir + singlename
     
+    try:
+        # Load data with scipy netcdf
+        ncid = netcdf.netcdf_file(data['filepath'], 'r', mmap=True)
 
-    # Load data with scipy netcdf
-    ncid = netcdf.netcdf_file(data['filepath'], 'r', mmap=True)
-
-    for key in ncid.variables.keys():
-        data[key]=ncid.variables[key].data   
+        for key in ncid.variables.keys():
+            data[key] = ncid.variables[key].data   
+        
+        data['dims'] = {}
+        for key in ncid.dimensions.keys():
+            data['dims'][key] = ncid.dimensions[key]
+    except TypeError:
+        if not suppress:
+            print('File is netcdf4 type')
+        ncid = n4.Dataset(data['filepath'])
+        data = ncid.variables      
+            
 
     if fvcom:
-        if ('nv' in data):
-            data['nv']=data['nv'].astype(int).T-1
-        if ('nbe' in data):
-            data['nbe']=data['nbe'].astype(int).T-1
-        if ('nele' in ncid.dimensions):    
-            data['nele'] = ncid.dimensions['nele']
-        if ('node' in ncid.dimensions):
-            data['node'] = ncid.dimensions['node']
-       
-
-        #Now we get the long/lat data.  Note that this method will search
-        #for long/lat files in the datadir and in all equal levels
-        #the datadir.
-        if (('lon' in data) and ('x' in data)):
-            if ((data['lon'].sum()==0).all() or (data['x']==data['lon']).all()):
-                long_matches = []
-                lat_matches = []
-
-                if glob.glob(datadir + "*_long.dat"):
-                    long_matches.append(glob.glob(datadir + "*_long.dat")[0])
-                if glob.glob(datadir + "*_lat.dat"):
-                    lat_matches.append(glob.glob(datadir + "*_lat.dat")[0])                    
-                if glob.glob(datadir + "../input/*_long.dat"):
-                    long_matches.append(glob.glob(datadir + "../*/*_long.dat")[0])
-                if glob.glob(datadir + "../input/*_lat.dat"):
-                    lat_matches.append(glob.glob(datadir + "../*/*_lat.dat")[0])
-
-                    #let's make sure that long/lat files were found.
-                if (len(long_matches) > 0 and len(lat_matches) > 0):
-                    data['lon'] = np.loadtxt(long_matches[0])
-                    data['lat'] = np.loadtxt(lat_matches[0])        
-                else:        
-                    print("No long/lat files found. Long/lat set to x/y")
-                    data['lon'] = data['x']
-                    data['lat'] = data['y']
-
-                
-        if ('nv' in data):
-            if 'lon' in data and 'lat' in data:
-                data['trigrid'] = mplt.Triangulation(data['lon'], data['lat'],data['nv'])   
-            if 'x' in data and 'y' in data:
-                data['trigridxy'] = mplt.Triangulation(data['x'], data['y'],data['nv'])
-  
+        if 'nv' in data:
+            data['nv'] = data['nv'].astype(int).T-1
+        if 'nbe' in data:
+            data['nbe'] = data['nbe'].astype(int).T-1
+        data = ncdatasort(data)  
         
+    return data
+
+
+def ncdatasort(data,trifinder=False,uvhset=True):
+    """
+    From the nc data provided, common variables are produced.
+
+    :Parameters: **data** -- a data dictionary of data from a .nc file
+
+    :Returns: **data** -- Python data dictionary updated to include uvnode and uvnodell
+    """
+    lond=False
+    latd=False
+    try:
+        #load lon/lat from files and use it
+        if glob.glob(data['datadir'] + "../input/*_lon.dat"):        
+            data['lon'] = np.loadtxt(glob.glob(data['datadir'] + "../input/*_lon.dat")[0])
+            lond=True
+        if glob.glob(data['datadir'] + "../input/*_long.dat"):        
+            data['lon'] = np.loadtxt(glob.glob(data['datadir'] + "../input/*_long.dat")[0])
+            lond=True
+        if glob.glob(data['datadir'] + "../input/*_lat.dat"):
+            data['lat'] = np.loadtxt(glob.glob(data['datadir'] + "../input/*_lat.dat")[0])
+            latd=True
+    except:
+        pass
+
+    lonx=False
+    if 'lon' not in data:
+        print("No lon found. Lon set to x")
+        data['lon'] = data['x']
+        lonx=True
+    latx=False
+    if 'lat' not in data:
+        print("No lat found. Lat set to y")
+        data['lat'] = data['y']
+        latx=True
+
+    
+    if ('lonc' not in data) or lond or lonx:    
+        data['lonc'] = data['lon'][data['nv']].mean(axis=1)
+    if ('latc' not in data) or latd or latx:   
+        data['latc'] = data['lat'][data['nv']].mean(axis=1)
+
+    data['nodell'] = np.vstack([data['lon'],data['lat']]).T
+    data['uvnodell'] = np.vstack([data['lonc'],data['latc']]).T
+
+
+    data['x'],data['y'],data['proj']=lcc(data['lon'],data['lat'])
+        
+    data['nodexy'] = np.vstack([data['x'],data['y']]).T
+    data['uvnodexy'] = data['nodexy'][data['nv'],:].mean(axis=1)
+    data['xc'] = data['uvnodexy'][:,0]
+    data['yc'] = data['uvnodexy'][:,1]
+    
+    try:
+        if 'nele' in data['dims']:    
+            data['nele'] = data['dims']['nele']
+        if 'node' in data['dims']:
+            data['node'] = data['dims']['node']
+    except KeyError:
+        pass
+
+    if 'Times' in data:
+        data['Time']=np.empty((len(data['Times']),),dtype='|S26')
+        for i in range(len(data['Times'])):
+                data['Time'][i]=''.join(data['Times'][i,].astype(str))
+        data['time']=dates.datestr2num(data['Time'])    
+        
+    if 'trigrid' not in data:
+        if (('nv' in data) and('lon' in data) and ('lat' in data)):
+            data['trigrid'] = mplt.Triangulation(data['lon'], data['lat'],data['nv'])      
+    if 'trigridxy' not in data:
+        if (('nv' in data) and('x' in data) and ('y' in data)):
+            data['trigridxy'] = mplt.Triangulation(data['x'], data['y'],data['nv'])  
+
+    if uvhset:
+        data['uvh']=data['h'][data['nv']].mean(axis=1)
+
+    if trifinder:
+        data['trigrid_finder'] = data['trigrid'].get_trifinder()
+        data['trigridxy_finder'] = data['trigridxy'].get_trifinder()
+
     return data
 
 
