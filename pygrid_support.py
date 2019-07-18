@@ -809,7 +809,7 @@ def _plot_fvcomfile():
         w.fvcom[dname] = dvdx - dudy
     elif (w.fvcomplot == 'density' and w.timeTF and w.lvlTF):
         dname='field'
-        i=w.etime; layer=w.elvl
+        i=w.time; layer=w.lvl
         pres = sw.pres(w.fvcom['h']+w.fvcom['zeta'][i,:],w.fvcom['lat'])
         w.fvcom[dname] = sw.dens(w.fvcom['salinity'][i,layer,:],w.fvcom['temp'][i,layer,:],pres)   
     else:
