@@ -41,35 +41,42 @@ class GeneralOptionBox(object):
         rw3 = 0.33       
         sh = 0.06
         ry = 0.01
+                    
+        self.smode=tki.StringVar()
+
+        
+        label(self.frm,0.075,ry,rh,rw,'''Default Axis Selection''')
+        ry += sh
+        rbutton(self.frm,0.05,ry,rh,rw3,'''-180,180''',
+                self.smode, 'NEGE')
+        rbutton(self.frm,0.35,ry,rh,rw3,'''0,360''',
+                self.smode, 'POSE')
+        rbutton(self.frm,0.65,ry,rh,rw3,'''Custom''',
+                self.smode, 'CUSTOM')
+        self.smode.set(self.config['gen']['axis'])
+                
+        ry += sh        
+        ry += sh        
+        label(self.frm,0.075,ry,rh,rw,'''Define Axis For Custom''')
+        
         
         ry += sh
-        label(self.frm,0.0,ry,rh,rw2,'''Fill''')
-        self.fillMenuVar = tki.StringVar(self.root)
-        self.fillChoices={'True','False'}
-        self.fillMenuVar.set(self.config['coast']['fill'])
-        self.fillMenu = tki.OptionMenu(self.frm,self.fillMenuVar,*self.fillChoices)
-        self.fillMenu.place(relx=0.50, rely=ry, relheight=rh, relwidth=rw2)
+        label(self.frm,0.0,ry,rh,rw2,'''Lon. Min.''')
+        self.e1=entry(self.frm,0.5,ry,rh,rw2,self.config['gen']['clonmin'])
         
         ry += sh
-        label(self.frm,0.0,ry,rh,rw2,'''Facecolor''')
-        self.e1=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['facecolor'])
-        
-        ry += sh
-        label(self.frm,0.0,ry,rh,rw2,'''Edgecolor''')
-        self.e2=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['edgecolor'])
+        label(self.frm,0.0,ry,rh,rw2,'''Lon. Max.''')
+        self.e2=entry(self.frm,0.5,ry,rh,rw2,self.config['gen']['clonmax'])
 
         ry += sh
-        label(self.frm,0.0,ry,rh,rw2,'''Linewidth''')
-        self.e3=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['linewidth'])
+        label(self.frm,0.0,ry,rh,rw2,'''Lat. Min.''')
+        self.e3=entry(self.frm,0.5,ry,rh,rw2,self.config['gen']['clatmin'])
         
         ry += sh
-        label(self.frm,0.0,ry,rh,rw2,'''Linestyle''')
-        self.e4=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['linestyle'])
+        label(self.frm,0.0,ry,rh,rw2,'''Lat. Max.''')
+        self.e4=entry(self.frm,0.5,ry,rh,rw2,self.config['gen']['clatmax'])
                
-        ry += sh
-        label(self.frm,0.0,ry,rh,rw2,'''Zorder''')
-        self.e5=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['zorder'])
-        
+       
 
         ################################################################
         #Save close apply buttons
@@ -79,37 +86,41 @@ class GeneralOptionBox(object):
         self.b_submit=button(self.frm,.01+rw3*2*.95+sh*.4,.925,rh,rw3*.95,'''Apply''',self.setConfig)
 
 
-
     def setConfig(self):
-        replot=False  
-              
-        e0=self.fillMenuVar.get() 
-        if self.config['coast']['fill']!=e0:
-            self.config['coast']['fill']=e0
-            replot=True
-        e1=self.e1.get() 
-        if self.config['coast']['facecolor']!=e1:
-            self.config['coast']['facecolor']=e1
-            replot=True
-        e2=self.e2.get() 
-        if self.config['coast']['edgecolor']!=e2:
-            self.config['coast']['edgecolor']=e2
-            replot=True
-        e3=self.e3.get() 
-        if self.config['coast']['linewidth']!=e3:
-            self.config['coast']['linewidth']=e3
-            replot=True
-        e4=self.e4.get() 
-        if self.config['coast']['linestyle']!=e4:
-            self.config['coast']['linestyle']=e4
-            replot=True
-        e5=self.e5.get() 
-        if self.config['coast']['zorder']!=e5:
-            self.config['coast']['zorder']=e5
-            replot=True
         
-        if replot:
-            pygrid_support.TODO 
+        e1=self.e1.get() 
+        if self.config['gen']['clonmin']!=e1:
+            self.config['gen']['clonmin']=e1
+        e2=self.e2.get() 
+        if self.config['gen']['clonmax']!=e2:
+            self.config['gen']['clonmax']=e2
+        e3=self.e3.get() 
+        if self.config['gen']['clatmin']!=e3:
+            self.config['gen']['clatmin']=e3
+        e4=self.e4.get() 
+        if self.config['gen']['clatmax']!=e4:
+            self.config['gen']['clatnmax']=e4
+
+
+        self.config['gen']['axis']=self.smode.get()
+        atype=self.smode.get()
+        
+        if atype=='NEGE':
+            self.config['gen']['dlonmin']=-180  
+            self.config['gen']['dlonmax']=180  
+            self.config['gen']['dlatmin']=-90  
+            self.config['gen']['dlatmax']=90 
+        if atype=='POSE':
+            self.config['gen']['dlonmin']=0  
+            self.config['gen']['dlonmax']=360  
+            self.config['gen']['dlatmin']=-90  
+            self.config['gen']['dlatmax']=90 
+        if atype=='CUSTOM':
+            self.config['gen']['dlonmin']=self.config['gen']['clonmin'] 
+            self.config['gen']['dlonmax']=self.config['gen']['clonmax']  
+            self.config['gen']['dlatmin']=self.config['gen']['clatmin']  
+            self.config['gen']['dlatmax']=self.config['gen']['clatmax']  
+
     
     def saveConfig(self):
         '''Set and save the config file'''  
@@ -730,6 +741,17 @@ def defaultConfig():
     '''Default options'''
     config = OrderedDict()
     
+    
+    config['gen']=OrderedDict([('axis', 'NEGE'),
+                               ('dlonmin', -180),
+                               ('dlonmax', 180),
+                               ('dlatmin', -90),
+                               ('dlatmax', 90),
+                               ('clonmin', -180),
+                               ('clonmax', 180),
+                               ('clatmin', -90),
+                               ('clatmax', 90)])
+    
     config['coast']=OrderedDict([('fill', True),
                                  ('facecolor', '0.75'),
                                  ('edgecolor', 'k'),
@@ -826,3 +848,10 @@ def button(frm,x,y,h,w,t,c):
     b.configure(text=t)
     b.configure(command=c)
     return b
+
+def rbutton(frm,x,y,h,w,t,v,m):
+    cb = tkinter.Radiobutton(frm)
+    cb.place(relx=x, rely=y, relheight=h, relwidth=w)
+    cb.configure(activebackground="#d9d9d9",justify=tkinter.LEFT)
+    cb.configure(text=t,variable=v,value=m)
+    return cb

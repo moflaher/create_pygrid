@@ -90,7 +90,6 @@ class New_Toplevel_1:
         #init options and load .config file    
         self.config=options.defaultConfig()
         options.loadConfig(self.config)    
-        #print(self.config['coast']    )
 
         top.geometry("1026x675+477+155")
         top.title("Pygrid")
@@ -108,7 +107,8 @@ class New_Toplevel_1:
         self.Canvas1.get_tk_widget().pack(side=TOP, fill="both", expand=1)       
 
         self.ax = self.figure.add_axes([.05,.05,.80,.9]) 
-        self.ax.axis([-180, 180, -90, 90])
+        self.ax.axis([float(self.config['gen']['dlonmin']), float(self.config['gen']['dlonmax']),
+                      float(self.config['gen']['dlatmin']), float(self.config['gen']['dlatmax'])])
         self.cax = self.figure.add_axes([.05+.8+0.025,.05,.025,.9])
         self.cax.set_visible(False)
         self.toolbar = NavigationToolbar2TkAgg( self.Canvas1, self.Frame1 )
@@ -151,6 +151,7 @@ class New_Toplevel_1:
         
         self.options = Menu(top,tearoff=0)
         add_cascade(self.menubar,self.options,"Options")
+        add_command(self.options,self.getGeneralOptionBox,"General Options")
         add_command(self.options,self.getCoastOptionBox,"Coastline Options")
         add_command(self.options,self.getSegOptionBox,"Seg Options")
         add_command(self.options,self.getNeiOptionBox,"Nei Options")
@@ -183,7 +184,6 @@ class New_Toplevel_1:
             cb.configure(activebackground="#d9d9d9",justify=LEFT)
             cb.configure(text=t,command=c,variable=v)
             return cb
-
 
         cbutton(self.Frame3,0.01,0.04,0.91,0.15,'''Show coastline''',
                 pygrid_support.toggle_coastline, self.CBVar['coast'])
@@ -424,6 +424,9 @@ class New_Toplevel_1:
         button(self.Frame4,0.525,.66,0.255,rw2,'''Redraw nei''',pygrid_support.redraw_nei)
 
 
+    def getGeneralOptionBox(self):
+        GeneralBox=options.GeneralOptionBox(self.config)
+        GeneralBox.root=root
     def getCoastOptionBox(self):
         CoastBox=options.CoastOptionBox(self.config)
         CoastBox.root=root
