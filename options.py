@@ -14,6 +14,110 @@ import pygrid_support
 import matplotlib as mpl
 from collections import OrderedDict
 
+
+
+class GeneralOptionBox(object):
+
+    root = None
+
+    def __init__(self, config):
+        """
+        Create the CoastOptionBox
+        """        
+        self.config=config
+        
+        tki = tkinter
+        self.top = tki.Toplevel(NeiOptionBox.root)
+        self.top.geometry("400x500+650+250")
+        self.top.title("General Options")
+        self.top.configure(highlightcolor="black")
+
+        self.frm = tki.Frame(self.top, borderwidth=4, relief='ridge')
+        self.frm.pack(fill='both', expand=True)
+
+        rh = 0.055
+        rw = 0.85
+        rw2 = 0.4 
+        rw3 = 0.33       
+        sh = 0.06
+        ry = 0.01
+        
+        ry += sh
+        label(self.frm,0.0,ry,rh,rw2,'''Fill''')
+        self.fillMenuVar = tki.StringVar(self.root)
+        self.fillChoices={'True','False'}
+        self.fillMenuVar.set(self.config['coast']['fill'])
+        self.fillMenu = tki.OptionMenu(self.frm,self.fillMenuVar,*self.fillChoices)
+        self.fillMenu.place(relx=0.50, rely=ry, relheight=rh, relwidth=rw2)
+        
+        ry += sh
+        label(self.frm,0.0,ry,rh,rw2,'''Facecolor''')
+        self.e1=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['facecolor'])
+        
+        ry += sh
+        label(self.frm,0.0,ry,rh,rw2,'''Edgecolor''')
+        self.e2=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['edgecolor'])
+
+        ry += sh
+        label(self.frm,0.0,ry,rh,rw2,'''Linewidth''')
+        self.e3=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['linewidth'])
+        
+        ry += sh
+        label(self.frm,0.0,ry,rh,rw2,'''Linestyle''')
+        self.e4=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['linestyle'])
+               
+        ry += sh
+        label(self.frm,0.0,ry,rh,rw2,'''Zorder''')
+        self.e5=entry(self.frm,0.5,ry,rh,rw2,self.config['coast']['zorder'])
+        
+
+        ################################################################
+        #Save close apply buttons
+        ################################################################
+        self.b_save=button(self.frm,.01+sh*0.1,.925,rh,rw3*.95,'''Save''',self.saveConfig)
+        self.b_cancel=button(self.frm,.01+rw3*.95+sh*.25,.925,rh,rw3*.95,'''Close''',self.top.destroy)
+        self.b_submit=button(self.frm,.01+rw3*2*.95+sh*.4,.925,rh,rw3*.95,'''Apply''',self.setConfig)
+
+
+
+    def setConfig(self):
+        replot=False  
+              
+        e0=self.fillMenuVar.get() 
+        if self.config['coast']['fill']!=e0:
+            self.config['coast']['fill']=e0
+            replot=True
+        e1=self.e1.get() 
+        if self.config['coast']['facecolor']!=e1:
+            self.config['coast']['facecolor']=e1
+            replot=True
+        e2=self.e2.get() 
+        if self.config['coast']['edgecolor']!=e2:
+            self.config['coast']['edgecolor']=e2
+            replot=True
+        e3=self.e3.get() 
+        if self.config['coast']['linewidth']!=e3:
+            self.config['coast']['linewidth']=e3
+            replot=True
+        e4=self.e4.get() 
+        if self.config['coast']['linestyle']!=e4:
+            self.config['coast']['linestyle']=e4
+            replot=True
+        e5=self.e5.get() 
+        if self.config['coast']['zorder']!=e5:
+            self.config['coast']['zorder']=e5
+            replot=True
+        
+        if replot:
+            pygrid_support.TODO 
+    
+    def saveConfig(self):
+        '''Set and save the config file'''  
+        
+        self.setConfig()        
+        saveConfigFile(self.config)   
+
+
 class CoastOptionBox(object):
 
     root = None
@@ -545,6 +649,14 @@ class fvcomOptionBox(object):
         label(self.frm,0.0,ry,rh,rw2,'''Zorder''')
         self.e2=entry(self.frm,0.5,ry,rh,rw2,self.config['fvcom']['zorder'])
         
+        ry += sh
+        label(self.frm,0.0,ry,rh,rw2,'''Shift lon (-360)''')
+
+        self.SMenuVar = tki.StringVar(self.root)
+        self.SChoices={'True','False'}
+        self.SMenuVar.set(self.config['fvcom']['shiftlonTF'])
+        self.SMenu = tki.OptionMenu(self.frm,self.SMenuVar,*self.SChoices)
+        self.SMenu.place(relx=0.50, rely=ry, relheight=rh, relwidth=rw2)
         # ry += sh
         # label(self.frm,0.0,ry,rh,rw2,'''Linewidth''')
         # self.e3=entry(self.frm,0.5,ry,rh,rw2,self.config['fvcom']['linewidth'])
@@ -587,11 +699,12 @@ class fvcomOptionBox(object):
         e2=self.e2.get() 
         if self.config['fvcom']['zorder']!=e2:
             self.config['fvcom']['zorder']=e2
-            replot=True            
-        # e3=self.e3.get() 
-        # if self.config['fvcom']['linewidth']!=e3:
-            # self.config['fvcom']['linewidth']=e3
-            # replot=True
+            replot=True    
+                    
+        e3=self.SMenuVar.get() 
+        if self.config['fvcom']['shiftlonTF']!=e3:
+            self.config['fvcom']['shiftlonTF']=e3
+            replot=True
         # e4=self.e4.get() 
         # if self.config['fvcom']['linecolor']!=e4:
             # self.config['fvcom']['linecolor']=e4
@@ -648,7 +761,8 @@ def defaultConfig():
                                ('zorder', 10)])
      
     config['fvcom']=OrderedDict([('colormap', 'viridis'),
-                                 ('zorder', 10)])
+                                 ('zorder', 10),
+                                 ('shiftlonTF', False)])
     
     return config
     

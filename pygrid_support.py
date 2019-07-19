@@ -15,7 +15,9 @@ import matplotlib.patches as mpatches
 import matplotlib.path as path
 from matplotlib.collections import LineCollection as LC
 from matplotlib.collections import PolyCollection as PC
+import matplotlib.tri as mplt
 import seawater as sw
+
 
 try:
     from Tkinter import *
@@ -613,6 +615,7 @@ def fvcomfile(filename = '', axis=False):
     if filename != '':
         r=filename.rfind('/')+1
         w.fvcom=ut.loadnc(filename[:r],filename[r:])
+        w.fvcom['shifted']=False
         #print(w.fvcom.keys())
         
         check=np.array(['ua','va','u','v','ww','uvh','wet_cells_prev_int',
@@ -743,6 +746,15 @@ def _plot_neifilecolor():
     
 def _plot_fvcomfile():
     
+    if (w.config['fvcom']['shiftlonTF']=='True' and w.fvcom['shifted']==False):
+        w.fvcom['lon']=w.fvcom['lon']-360.0
+        w.fvcom['trigrid'] = mplt.Triangulation(w.fvcom['lon'], w.fvcom['lat'],w.fvcom['nv']) 
+        w.fvcom['shifted']=True
+    elif (w.config['fvcom']['shiftlonTF']=='False' and w.fvcom['shifted']==True):
+        w.fvcom['lon']=w.fvcom['lon']+360.0
+        w.fvcom['trigrid'] = mplt.Triangulation(w.fvcom['lon'], w.fvcom['lat'],w.fvcom['nv']) 
+        w.fvcom['shifted']=False
+
     if 'fvcom' not in w.FIGS:
         w.FIGS['fvcom']={}
     if not hasattr(w,'cb'):
@@ -1104,7 +1116,7 @@ def load_coastline():
             #if isin(axis,np.array(line)):
                 #yep+=[i]
                
-        if w.config['coast']['fill']:
+        if w.config['coast']['fill']=='True':
             w.FIGS['coast']=PC(w.coastline,facecolor = w.config['coast']['facecolor'],edgecolor=w.config['coast']['edgecolor'],linewidths=float(w.config['coast']['linewidth']),zorder=int(w.config['coast']['zorder'])) 
         else:
             w.FIGS['coast']=LC(w.coastline,color=w.config['coast']['edgecolor'],linewidths=float(w.config['coast']['linewidth']),zorder=int(w.config['coast']['zorder'])) 
