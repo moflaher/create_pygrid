@@ -15,6 +15,7 @@ import matplotlib.patches as mpatches
 import matplotlib.path as path
 from matplotlib.collections import LineCollection as LC
 from matplotlib.collections import PolyCollection as PC
+from collections import OrderedDict
 import matplotlib.tri as mplt
 import seawater as sw
 
@@ -428,7 +429,33 @@ def delete_seg():
             
     _plot_segfile()
     
+    
+    
+########################################################################
+#
+#   marker code
+#
+########################################################################    
+def _add_marker():
+    if w.mlon.get()=='' and w.mlat.get()=='' and w.mlabel.get()=='':
+        return
+    
+    if not hasattr(w,'markerfile'):
+        w.markerfile=OrderedDict()
+        w.markerfile['lon']=np.array([float(w.mlon.get())])
+        w.markerfile['lat']=np.array([float(w.mlat.get())])
+        w.markerfile['label']=np.array([w.mlabel.get()])
+        w.TF['marker']=True
+        w.CBVar['marker'].set(1)        
+    else:
+        w.markerfile['lon']=np.append(w.markerfile['lon'],float(w.mlon.get()))
+        w.markerfile['lat']=np.append(w.markerfile['lat'],float(w.mlat.get()))
+        w.markerfile['label']=np.append(w.markerfile['label'],w.mlabel.get())
         
+        
+    _plot_markerfile()
+    w.figure.canvas.draw()    
+    
 
 ########################################################################
 #
@@ -654,6 +681,24 @@ def fvcomfile(filename = '', axis=False):
         w.figure.canvas.draw()
             
     return
+    
+def markerfile(filename = '' , axis=False, flip=False):
+    """
+    Load and plot an labelfile.
+    """
+
+    if filename != '':
+        w.markerfile=ut.load_markerfile(filename)
+        
+        _plot_markerfile()
+
+        #if axis:
+        #    w.ax.axis([w.llzfile[:,0].min(),w.llzfile[:,0].max(),w.llzfile[:,1].min(),w.llzfile[:,1].max()])        
+        w.TF['marker']=True
+        w.CBVar['marker'].set(1)
+        w.figure.canvas.draw()
+            
+    return
  
 ########################################################################
 #
@@ -843,6 +888,36 @@ def _plot_fvcomfile():
     w.figure.canvas.draw()
 
     return
+    
+    
+def _plot_markerfile():
+  
+    state = True
+    if 'marker' in w.FIGS:
+        for m in w.FIGS['marker'].values():
+            m.remove()
+        w.FIGS['markerd'].remove()
+        state = w.TF['marker']
+    else:
+        w.FIGS['marker']=OrderedDict()
+        w.FIGS['markerd']=OrderedDict()
+        
+    bbox_props = dict(boxstyle=w.config['marker']['boxstyle'], fc=w.config['marker']['fc'], ec=w.config['marker']['ec'], alpha=float(w.config['marker']['alpha']),lw=float(w.config['marker']['lw']))
+   
+    for i,(lon,lat,label) in enumerate(zip(w.markerfile['lon'],w.markerfile['lat'],w.markerfile['label'])):
+        w.FIGS['marker'][str(i)]=w.ax.annotate(label,xy=(lon,lat),xytext=(float(w.config['marker']['offset']),
+                                               float(w.config['marker']['offset'])), textcoords='offset points',
+                                               bbox=bbox_props,zorder=int(w.config['marker']['zorder']),
+                                               size=int(w.config['marker']['fontsize']),color=w.config['marker']['fontcolor'])  
+                                                     
+    w.FIGS['markerd']=w.ax.scatter(w.markerfile['lon'],w.markerfile['lat'],c=w.config['marker']['facecolor'],
+                                   s=float(w.config['marker']['markersize']),edgecolor=w.config['marker']['edgecolor'],
+                                   zorder=int(w.config['marker']['zorder']))
+    #w.markercnt=i    
+    
+    w.figure.canvas.draw()
+
+    return
 
 
 ########################################################################
@@ -944,6 +1019,30 @@ def toggle_fvcom():
         w.CBVar['fvcom'].set(0)   
     
     return
+    
+def toggle_markerfile():
+    """
+    Toggle markerfile
+    """
+    
+    try:
+        if w.TF['marker']:
+            for p in w.FIGS['marker'].values():
+                p.set_visible(False)
+            w.FIGS['markerd'].set_visible(False)
+            w.TF['marker']=False
+        else:
+            for p in w.FIGS['marker'].values():
+                p.set_visible(True)
+            w.FIGS['markerd'].set_visible(True)
+            w.TF['marker']=True
+            
+        w.figure.canvas.draw()
+    except AttributeError:
+        w.CBVar['marker'].set(0)  
+    
+    return    
+
  
 def toggle_plot(name,color=False):
     """
@@ -1075,6 +1174,14 @@ def save_neifile():
     if filename != '':
         ut.save_neifile(w.neifile,filename)
 
+def save_markerfile():
+    
+    filename=''
+    filename=asksaveasfilename(initialdir=w.init_dir)
+    if filename != '':
+        ut.save_markerfile(w.markerfile,filename)
+        
+
 
 ########################################################################
 #
@@ -1166,6 +1273,17 @@ def load_fvcomfile():
     filename=askopenfilename(initialdir=w.init_dir)
     
     fvcomfile(filename)
+            
+    return
+
+def load_markerfile():
+    """
+    Load and plot an labelfile.
+    """
+    filename=''
+    filename=askopenfilename(initialdir=w.init_dir)
+    
+    markerfile(filename)
             
     return
 

@@ -296,6 +296,40 @@ def load_llzfile(filename=None, flip=False):
 
     return data
     
+def load_markerfile(filename=None):
+    """
+    Loads an label file (lon lat label). 
+    """
+
+    data={}
+    
+    if filename==None:
+        print('load_markerfile requires a filename to load.')
+        return
+    try:
+        fp=open(filename,'r')
+    except IOError:
+        print('load_markerfile: invalid filename.')
+        return data
+        
+    lon=np.array([])
+    lat=np.array([])
+    label=np.array([])
+
+    for line in fp:
+        sline=line.split(' ')
+        lon=np.append(lon,float(sline[0]))
+        lat=np.append(lat,float(sline[1]))
+        label=np.append(label,' '.join(sline[2:]).replace('\n',''))
+    
+    fp.close()
+
+    data['lon']=lon
+    data['lat']=lat
+    data['label']=label
+
+    return data
+    
     
 ########################################################################
 #
@@ -370,7 +404,7 @@ def save_llzfile(data,filename=None):
 
     fp.close()
     
-    
+        
 def save_neifile(neifile=None,neifilename=None):
     """
     save a .nei file
@@ -437,6 +471,27 @@ def save_nod2polyfile(segfile,filename=None,bnum=[]):
 
    
     return 
+
+
+def save_markerfile(data,filename=None):
+    """
+    Saves a markerfile.
+    """
+    
+    if filename==None:
+        print('save_markerfile requires a filename to save.')
+        return
+    try:
+        fp=open(filename,'w')
+    except IOError:
+        print('Can''t make ' + filename)
+        return
+
+    for lon,lat,label in zip(data['lon'],data['lat'],data['label']):
+        fp.write('{:6f} {:6f} {}\n'.format(lon,lat,label))
+
+    fp.close()
+
 
 
 ########################################################################

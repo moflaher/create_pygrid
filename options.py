@@ -505,8 +505,8 @@ class NodOptionBox(object):
             self.config['nod']['edgecolor']=e3
             replot=True
         e4=self.e4.get() 
-        if self.config['seg']['zorder']!=e4:
-            self.config['seg']['zorder']=e4
+        if self.config['nod']['zorder']!=e4:
+            self.config['nod']['zorder']=e4
             replot=True
         
         if replot:
@@ -736,6 +736,137 @@ class fvcomOptionBox(object):
         saveConfigFile(self.config)     
             
 
+class markerOptionBox(object):
+
+    root = None
+
+    def __init__(self, config):
+        """
+        Create the MarkerOptionBox
+        """        
+        self.config=config
+        
+        tki = tkinter
+        self.top = tki.Toplevel(markerOptionBox.root)
+        self.top.geometry("400x500+650+250")
+        self.top.title("Marker Plot Options")
+        self.top.configure(highlightcolor="black")
+
+        self.frm = tki.Frame(self.top, borderwidth=4, relief='ridge')
+        self.frm.pack(fill='both', expand=True)
+
+        rh = 0.055
+        rw = 0.85
+        rw2 = 0.4 
+        rw3 = 0.33       
+        sh = 0.06
+        ry = 0.01
+        
+
+        label(self.frm,0.0,ry,rh,rw2,'''Zorder''')
+        self.e1=entry(self.frm,0.5,ry,rh,rw2,self.config['marker']['zorder'])
+        
+        label(self.frm,0.075,ry+sh*1,rh,rw,'''Marker Options:''')
+        label(self.frm,0.0,ry+sh*2,rh,rw2,'''Markersize''')
+        self.e2=entry(self.frm,0.5,ry+sh*2,rh,rw2,self.config['marker']['markersize']) 
+        label(self.frm,0.0,ry+sh*3,rh,rw2,'''Facecolor''')
+        self.e3=entry(self.frm,0.5,ry+sh*3,rh,rw2,self.config['marker']['facecolor'])  
+        label(self.frm,0.0,ry+sh*4,rh,rw2,'''Edgecolor''')
+        self.e4=entry(self.frm,0.5,ry+sh*4,rh,rw2,self.config['marker']['edgecolor'])
+        
+        label(self.frm,0.075,ry+sh*5,rh,rw,'''Box Options:''')
+        label(self.frm,0.0,ry+sh*6,rh,rw2,'''Text Offset''')
+        self.e5=entry(self.frm,0.5,ry+sh*6,rh,rw2,self.config['marker']['offset']) 
+        label(self.frm,0.0,ry+sh*7,rh,rw2,'''BoxStyle''')
+        self.e6=entry(self.frm,0.5,ry+sh*7,rh,rw2,self.config['marker']['boxstyle'])  
+        label(self.frm,0.0,ry+sh*8,rh,rw2,'''Facecolor''')
+        self.e7=entry(self.frm,0.5,ry+sh*8,rh,rw2,self.config['marker']['fc'])
+        label(self.frm,0.0,ry+sh*9,rh,rw2,'''Edgecolor''')
+        self.e8=entry(self.frm,0.5,ry+sh*9,rh,rw2,self.config['marker']['ec'])
+        label(self.frm,0.0,ry+sh*10,rh,rw2,'''Linewidth''')
+        self.e9=entry(self.frm,0.5,ry+sh*10,rh,rw2,self.config['marker']['lw'])
+        label(self.frm,0.0,ry+sh*11,rh,rw2,'''Alpha''')
+        self.e10=entry(self.frm,0.5,ry+sh*11,rh,rw2,self.config['marker']['alpha'])
+        label(self.frm,0.0,ry+sh*12,rh,rw2,'''Fontsize''')
+        self.e11=entry(self.frm,0.5,ry+sh*12,rh,rw2,self.config['marker']['fontsize'])
+        label(self.frm,0.0,ry+sh*13,rh,rw2,'''Fontcolor''')
+        self.e12=entry(self.frm,0.5,ry+sh*13,rh,rw2,self.config['marker']['fontcolor'])
+               
+
+        
+
+
+        ################################################################
+        #Save close apply buttons
+        ################################################################
+        self.b_save=button(self.frm,.01+sh*0.1,.925,rh,rw3*.95,'''Save''',self.saveConfig)
+        self.b_cancel=button(self.frm,.01+rw3*.95+sh*.25,.925,rh,rw3*.95,'''Close''',self.top.destroy)
+        self.b_submit=button(self.frm,.01+rw3*2*.95+sh*.4,.925,rh,rw3*.95,'''Apply''',self.setConfig)
+
+
+    def setConfig(self):
+        replot=False  
+              
+        e1=self.e1.get() 
+        if self.config['marker']['zorder']!=e1:
+            self.config['marker']['zorder']=e1
+            replot=True
+        e2=self.e2.get() 
+        if self.config['marker']['markersize']!=e2:
+            self.config['marker']['markersize']=e2
+            replot=True
+        e3=self.e3.get() 
+        if self.config['marker']['facecolor']!=e3:
+            self.config['marker']['facecolor']=e3
+            replot=True
+        e4=self.e4.get() 
+        if self.config['marker']['edgecolor']!=e4:
+            self.config['marker']['edgecolor']=e4
+            replot=True
+        e5=self.e5.get() 
+        if self.config['marker']['offset']!=e5:
+            self.config['marker']['offset']=e5
+            replot=True
+        e6=self.e6.get() 
+        if self.config['marker']['boxstyle']!=e6:
+            self.config['marker']['boxstyle']=e6
+            replot=True
+        e7=self.e7.get() 
+        if self.config['marker']['fc']!=e7:
+            self.config['marker']['fc']=e7
+            replot=True
+        e8=self.e8.get() 
+        if self.config['marker']['ec']!=e8:
+            self.config['marker']['ec']=e8
+            replot=True
+        e9=self.e9.get() 
+        if self.config['marker']['lw']!=e9:
+            self.config['marker']['lw']=e9
+            replot=True
+        e10=self.e10.get() 
+        if self.config['marker']['alpha']!=e10:
+            self.config['marker']['alpha']=e10
+            replot=True
+        e11=self.e11.get() 
+        if self.config['marker']['fontsize']!=e11:
+            self.config['marker']['fontsize']=e11
+            replot=True
+        e12=self.e12.get() 
+        if self.config['marker']['fontcolor']!=e12:
+            self.config['marker']['fontcolor']=e12
+            replot=True
+        
+        if replot:
+            pygrid_support._plot_markerfile()  
+    
+    def saveConfig(self):
+        '''Set and save the config file'''  
+        
+        self.setConfig()        
+        saveConfigFile(self.config)   
+        
+
+
 
 def defaultConfig():
     '''Default options'''
@@ -785,6 +916,20 @@ def defaultConfig():
     config['fvcom']=OrderedDict([('colormap', 'viridis'),
                                  ('zorder', 10),
                                  ('shiftlonTF', False)])
+                                 
+    config['marker']=OrderedDict([('markersize', 36.0),
+                                  ('facecolor', 'b'),
+                                  ('edgecolor', 'None'),
+                                  ('zorder', 10),
+                                  ('offset',10),
+                                  ('boxstyle', 'round'),
+                                  ('fc', 'w'),
+                                  ('ec', '0.5'),
+                                  ('lw',1),
+                                  ('alpha', 0.9),
+                                  ('fontsize', 10),
+                                  ('fontcolor', 'k')])
+                                  
     
     return config
     

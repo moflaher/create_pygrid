@@ -139,6 +139,7 @@ class New_Toplevel_1:
         add_command(self.save,pygrid_support.save_nodfile,"Save nodfile")
         add_command(self.save,pygrid_support.save_nod2polyfile,"Save nod2poly file")
         add_command(self.save,pygrid_support.save_llzfile,"Save llzfile")
+        add_command(self.save,pygrid_support.save_markerfile,"Save markerfile")
 
         self.load = Menu(top,tearoff=0)
         add_cascade(self.menubar,self.load,"Load")
@@ -148,6 +149,7 @@ class New_Toplevel_1:
         add_command(self.load,pygrid_support.load_nodfile,"Load nodfile")
         add_command(self.load,pygrid_support.load_llzfile,"Load llzfile")
         add_command(self.load,pygrid_support.load_fvcomfile,"Load fvcom")
+        add_command(self.load,pygrid_support.load_markerfile,"Load markerfile")
         
         self.options = Menu(top,tearoff=0)
         add_cascade(self.menubar,self.options,"Options")
@@ -158,6 +160,7 @@ class New_Toplevel_1:
         add_command(self.options,self.getNodOptionBox,"Nod Options")
         add_command(self.options,self.getllzOptionBox,"llz Options")
         add_command(self.options,self.getFvcomOptionBox,"Fvcom Options")
+        add_command(self.options,self.getMarkerOptionBox,"Marker Options")
                
         self.help = Menu(top,tearoff=0)
         add_cascade(self.menubar,self.help,"Help")
@@ -173,7 +176,7 @@ class New_Toplevel_1:
         self.Frame3.place(relx=0.0, rely=0.0, relheight=0.07, relwidth=0.78)
         self.Frame3.configure(relief=GROOVE,borderwidth="2",width=805)
 
-        self.types=['coast','seg','nei','nod','llz','neic','fvcom']
+        self.types=['coast','seg','nei','nod','llz','neic','fvcom','marker']
         self.CBVar={}
         for typ in self.types:
             self.CBVar[typ]=IntVar()
@@ -227,12 +230,17 @@ class New_Toplevel_1:
         
         self.Frame7 = Frame(self.nb)
         self.Frame7.place(relx=0.78, rely=0.0, relheight=0.75, relwidth=0.22)
-        self.Frame7.configure(relief=GROOVE,borderwidth="2",width=215)        
+        self.Frame7.configure(relief=GROOVE,borderwidth="2",width=215)  
+        
+        self.Frame8 = Frame(self.nb)
+        self.Frame8.place(relx=0.78, rely=0.0, relheight=0.75, relwidth=0.22)
+        self.Frame8.configure(relief=GROOVE,borderwidth="2",width=215)            
                 
         self.nb.add(self.Frame2, text='Nodes')
         self.nb.add(self.Frame5, text='Depth')
         self.nb.add(self.Frame6, text='Seg')
         self.nb.add(self.Frame7, text='FVCOM')
+        self.nb.add(self.Frame8, text='Marker')
 
         self.nb.place(relx=0.78, rely=0, relheight=0.75, relwidth=0.22)
         
@@ -393,6 +401,27 @@ class New_Toplevel_1:
         
         button(self.Frame7,0.075,ry+sh*15.5,rh,rw,'''Plot FVCOM''',pygrid_support._plot_fvcomfile)     
         
+        ########################################################################
+        #
+        #   Markers Tab
+        #
+        ########################################################################
+        ry = 0.01  
+        cbutton(self.Frame8,0.075,ry,rh,rw,'''Show Markers''',
+                pygrid_support.toggle_markerfile, self.CBVar['marker'])
+                
+        label(self.Frame8,.075,ry+sh,rh,rw2,'''Lon:''')
+        self.mlon = entry(self.Frame8,0.075,ry+sh*2,rh,rw2,'')
+        
+        label(self.Frame8,.525,ry+sh,rh,rw2,'''Lat:''')
+        self.mlat = entry(self.Frame8,0.525,ry+sh*2,rh,rw2,'')
+        
+        
+        label(self.Frame8,.075,ry+sh*3,rh,rw,'''Label:''')
+        self.mlabel = entry(self.Frame8,0.075,ry+sh*4,rh,rw,'')
+                
+        
+        button(self.Frame8,0.075,ry+sh*15.5,rh,rw,'''Add Marker''',pygrid_support._add_marker) 
         
         ########################################################################
         #
@@ -445,6 +474,9 @@ class New_Toplevel_1:
     def getFvcomOptionBox(self):
         fvcomBox=options.fvcomOptionBox(self.config)
         fvcomBox.root=root
+    def getMarkerOptionBox(self):
+        markerBox=options.markerOptionBox(self.config)
+        markerBox.root=root
 
 
 if __name__ == '__main__':
