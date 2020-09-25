@@ -15,6 +15,7 @@ import matplotlib.tri as mplt
 import matplotlib.dates as dates
 import collections
 import copy
+import netCDF4 as n4
 
 
 ########################################################################
