@@ -669,7 +669,74 @@ def fvcomfile(filename = '', axis=False):
         
         w.lvlmin.configure(text='0')
         w.lvlmax.configure(text=str(w.fvcom['dims']['siglev']))
-                
+        
+        w.fvcom['inputfile']=False        
+        _plot_fvcomfile()
+
+        w.cax.set_visible(True)
+        if axis:
+            w.ax.axis([w.fvcom['lon'].min(),w.fvcom['lon'].max(),w.fvcom['lat'].min(),w.fvcom['lat'].max()])        
+        w.TF['fvcom']=True
+        w.caxTF=True
+        w.CBVar['fvcom'].set(1)
+        w.figure.canvas.draw()
+            
+    return
+    
+def fvcom_inputfile(filename = '', axis=False):
+    """
+    Load and plot an fvcomfile.
+    """
+
+    if filename != '':
+        if hasattr(w,'fvcom'):
+            del(w.fvcom)
+            w.listbox.delete(0,END) 
+            w.overmenu.delete(0,END)
+        if hasattr(w,'fvcomplot'):
+            del(w.fvcomplot)
+            w.listbox.delete(0,END) 
+            w.overmenu.delete(0,END) 
+        r=filename.rfind('/')+1
+        w.fvcom=ut.loadnc(filename[:r],filename[r:],False)
+        w.fvcom['shifted']=False
+        #print(w.fvcom.keys())
+        
+        check=np.array(['U10','V10','air_temperature','relative_humidity','air_pressure','long_wave','short_wave','tsl','ssl','precip','evap'])
+        w.fvcom['pable_txt']=np.array([])
+        w.fvcom['pable']=np.array([])
+        for key in w.fvcom.keys():
+            if key in check:     
+                w.fvcom['pable_txt']=np.append(w.fvcom['pable_txt'],key + " - {}".format(np.shape(w.fvcom[key])))           
+                w.fvcom['pable']=np.append(w.fvcom['pable'],key)
+        # for key in w.fvcom.keys():
+            # if w.fvcom['dims']['nele'] in np.shape(w.fvcom[key]):
+                # w.fvcom['pable']=np.append(w.fvcom['pable'],key + " - {}".format(np.shape(w.fvcom[key])))
+            # if w.fvcom['dims']['node'] in np.shape(w.fvcom[key]):
+                # w.fvcom['pable']=np.append(w.fvcom['pable'],key + " - {}".format(np.shape(w.fvcom[key])))  
+        
+       
+        for i in w.fvcom['pable_txt']:
+            w.listbox.insert(END, i)
+        
+        if 'time' in w.fvcom:
+            w.timemin.configure(text='0')
+            w.timemax.configure(text=str(len(w.fvcom['time'])))
+        else:
+            w.timemin.configure(text='na')
+            w.timemax.configure(text='na')
+        
+        if 'siglev' in w.fvcom['dims']:
+            w.lvlmin.configure(text='0')
+            w.lvlmax.configure(text=str(w.fvcom['dims']['siglev']))
+        elif 'ksl' in w.fvcom['dims']:
+            w.lvlmin.configure(text='0')
+            w.lvlmax.configure(text=str(w.fvcom['dims']['ksl']))
+        else:
+            w.lvlmin.configure(text='na')
+            w.lvlmax.configure(text='na')
+         
+        w.fvcom['inputfile']=True
         _plot_fvcomfile()
 
         w.cax.set_visible(True)
@@ -791,6 +858,44 @@ def _plot_neifilecolor():
     
 def _plot_fvcomfile():
     
+    #add code to handle copying neifile required data or loading an nei file
+    #check for all fields if missing then checking w.neifile inform that its using if a match
+    #if not inform and prompt to load neifile (dont over write w.neifile load directly to w.fvcom) or cancel
+    
+    #Make sure all fields that are required are in w.fvcom
+    req = ['lon','lat','nv']
+    checklist=[var for var in req if var not in w.fvcom]
+    #print(checklist,w.fvcom.keys())
+    match=False
+    if len(checklist)>0 and hasattr(w,'neifile'):
+        if 'node' in w.fvcom['dims'] and 'nele' in w.fvcom['dims']:
+            if w.fvcom['dims']['node']==w.neifile['nnodes'] and w.fvcom['dims']['nele']==len(w.neifile['nv']):
+                print('Neifile dims match inputfile dims. Using neifile grid information.')
+                match=True
+        elif 'node' in w.fvcom['dims']:
+            if w.fvcom['dims']['node']==w.neifile['nnodes']:
+                match=True
+                print('Partial match (node). Using neifile grid information.')       
+        elif 'nele' in w.fvcom['dims']:
+            if w.fvcom['dims']['nele']==len(w.neifile['nv']):
+                match=True
+                print('Partial match (element). Using neifile grid information.')
+        else:
+            print('Error in inputfile')   
+        
+        if match:
+            w.fvcom['lon']=w.neifile['lon']
+            w.fvcom['lat']=w.neifile['lat']
+            w.fvcom['nv']=w.neifile['nv']
+            w.fvcom['trigrid'] = mplt.Triangulation( w.fvcom['lon'],  w.fvcom['lat'], w.fvcom['nv']) 
+    elif len(checklist)>0 and not hasattr(w,'neifile'):
+        load_neifile()
+        _plot_fvcomfile()
+        return
+    else:
+        pass
+       
+    
     if (w.config['fvcom']['shiftlonTF']=='True' and w.fvcom['shifted']==False):
         w.fvcom['lon']=w.fvcom['lon']-360.0
         w.fvcom['trigrid'] = mplt.Triangulation(w.fvcom['lon'], w.fvcom['lat'],w.fvcom['nv']) 
@@ -813,13 +918,18 @@ def _plot_fvcomfile():
             state = w.TF['fvcom']
     except:
         w.fvcomplot=''
-  
+    
+    #handle fvcominputfile
+    if w.fvcom['inputfile'] and w.overmenu.get()=='':
+        w.overmenu.insert(0,w.fvcom['pable'][0])        
 
     if w.overmenu.get()!='':
         if w.overmenu.get() in w.fvcom['pable']:
             w.fvcomplot=w.overmenu.get()
     else:
         w.fvcomplot = w.FVCOMMenuVar.get()   
+    
+
     
     if w.etime!='':
         w.timeTF=True
@@ -833,6 +943,8 @@ def _plot_fvcomfile():
         w.lvlTF=False        
 
     #print(w.fvcomplot)
+    
+    #print(w.fvcom['pable'])
 
     if w.fvcomplot == 'dhh':
         dname='dhh'
@@ -872,8 +984,13 @@ def _plot_fvcomfile():
     else:
         dname='field'
         shp=np.shape(w.fvcom[w.fvcomplot])
-        tTF=(len(w.fvcom['time']) in shp)
-        lTF=(w.fvcom['dims']['siglev'] in shp) or (w.fvcom['dims']['siglay'] in shp)
+        tTF=False
+        lTF=False
+        if 'time' in w.fvcom:
+            tTF=(len(w.fvcom['time']) in shp)
+        if 'siglev' in w.fvcom['dims'] and 'siglev' in w.fvcom['dims']:
+            lTF=(w.fvcom['dims']['siglev'] in shp) or (w.fvcom['dims']['siglay'] in shp)
+            
         if (tTF==False and lTF==False):
             w.fvcom[dname]=w.fvcom[w.fvcomplot]
         elif (tTF==True and lTF==False):
@@ -1275,6 +1392,18 @@ def load_fvcomfile():
     fvcomfile(filename)
             
     return
+
+def load_fvcom_inputfile():
+    """
+    Load and plot an fvcom inputfile.
+    """
+    filename=''
+    filename=askopenfilename(initialdir=w.init_dir)
+    
+    fvcom_inputfile(filename)
+            
+    return
+
 
 def load_markerfile():
     """

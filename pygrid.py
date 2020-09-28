@@ -149,6 +149,7 @@ class New_Toplevel_1:
         add_command(self.load,pygrid_support.load_nodfile,"Load nodfile")
         add_command(self.load,pygrid_support.load_llzfile,"Load llzfile")
         add_command(self.load,pygrid_support.load_fvcomfile,"Load fvcom")
+        add_command(self.load,pygrid_support.load_fvcom_inputfile,"Load fvcom input")
         add_command(self.load,pygrid_support.load_markerfile,"Load markerfile")
         
         self.options = Menu(top,tearoff=0)
