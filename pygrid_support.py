@@ -572,7 +572,10 @@ def neifile(filename = '', axis=False):
     if filename != '':
         w.neifile=ut.load_nei2fvcom(filename)
         if 'nei' in w.FIGS:
-            w.FIGS['nei'].remove()
+            #print(w.FIGS['nei'].remove())
+            for fig in w.FIGS['nei']:
+                fig.remove()
+                #w.FIGS['nei'].remove()
         w.FIGS['nei']=w.ax.triplot(w.neifile['trigrid'],color=w.config['nei']['linecolor'],lw=float(w.config['nei']['linewidth']),zorder=int(w.config['nei']['zorder']))
         if axis:
             w.ax.axis([w.neifile['lon'].min(),w.neifile['lon'].max(),w.neifile['lat'].min(),w.neifile['lat'].max()])
