@@ -8,7 +8,7 @@
 import sys
 import utilities as ut
 import numpy as np
-from tkFileDialog import askopenfilename, asksaveasfilename
+
 import copy
 import collections
 import matplotlib.patches as mpatches
@@ -22,11 +22,14 @@ import seawater as sw
 
 try:
     from Tkinter import *
+    from Tkinter.tkFileDialog import askopenfilename, asksaveasfilename
 except ImportError:
     from tkinter import *
+    from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 try:
     import ttk
+    from tkinter.tkFileDialog import askopenfilename, asksaveasfilename
     py3 = 0
 except ImportError:
     import tkinter.ttk as ttk
@@ -898,6 +901,8 @@ def _plot_fvcomfile():
     else:
         pass
        
+    print(w.fvcom.keys())
+    print(w.neifile.keys())
     
     if (w.config['fvcom']['shiftlonTF']=='True' and w.fvcom['shifted']==False):
         w.fvcom['lon']=w.fvcom['lon']-360.0
@@ -991,8 +996,12 @@ def _plot_fvcomfile():
         lTF=False
         if 'time' in w.fvcom:
             tTF=(len(w.fvcom['time']) in shp)
-        if 'siglev' in w.fvcom['dims'] and 'siglev' in w.fvcom['dims']:
-            lTF=(w.fvcom['dims']['siglev'] in shp) or (w.fvcom['dims']['siglay'] in shp)
+        if 'siglev' in w.fvcom['dims']:
+            lTF=(w.fvcom['dims']['siglev'] in shp) 
+        if 'siglay' in w.fvcom['dims']:
+            lTF=(w.fvcom['dims']['siglay'] in shp)
+        if 'ksl' in w.fvcom['dims']:
+            lTF=(w.fvcom['dims']['ksl'] in shp)
             
         if (tTF==False and lTF==False):
             w.fvcom[dname]=w.fvcom[w.fvcomplot]
@@ -1001,7 +1010,10 @@ def _plot_fvcomfile():
         else:
             w.fvcom[dname]=w.fvcom[w.fvcomplot][w.time,w.lvl,:]
         
-    cmin, cmax = getcb(w.fvcom[dname])          
+    cmin, cmax = getcb(w.fvcom[dname])        
+    #print(w.fvcom.keys())  
+    #print(w.fvcom['tsl'].shape)
+    #print(w.fvcom['lon'].shape)
     w.FIGS['fvcom'][w.fvcomplot]=w.ax.tripcolor(w.fvcom['trigrid'], w.fvcom[dname],vmin=cmin,vmax=cmax,visible=state,cmap=w.config['fvcom']['colormap'],zorder=int(w.config['fvcom']['zorder']))
     w.cb[w.fvcomplot]=w.figure.colorbar(w.FIGS['fvcom'][w.fvcomplot],cax=w.cax)
 

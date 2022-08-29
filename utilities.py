@@ -504,9 +504,10 @@ def save_markerfile(data,filename=None):
 def get_nv(neifile):
 
     try:
-        import pyximport; pyximport.install()
+        import pyximport; pyximport.install(language_level=3,setup_args={"include_dirs":numpy.get_include()})
+        print('here1')
         import get_nv as gnv
-        
+        print('here2')
         neifile['nv']=gnv.get_nvc(neifile['neighbours'],neifile['nnodes'],neifile['maxnei'])
         neifile['trigrid'] = mplt.Triangulation(neifile['lon'], neifile['lat'],neifile['nv'])  
     except:
