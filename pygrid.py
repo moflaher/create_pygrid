@@ -302,6 +302,8 @@ class New_Toplevel_1:
         button(self.Frame2,0.075,ry+sh*7,rh,rw,'''Extract nod from nei''',pygrid_support.extract_nod)
         button(self.Frame2,0.075,ry+sh*8,rh,rw,'''Extract seg from nei''',pygrid_support.extract_seg)
         button(self.Frame2,0.075,ry+sh*9,rh,rw,'''Extract llz from nei''',pygrid_support.extract_llz)
+        button(self.Frame2,0.075,ry+sh*10,rh,rw,'''Sub llz depth into nei''',pygrid_support.subllz2nei)
+
 
         
         

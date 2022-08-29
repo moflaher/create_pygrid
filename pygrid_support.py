@@ -516,6 +516,22 @@ def extract_nod():
     w.figure.canvas.draw()
     
     return
+ 
+def subllz2nei():
+    
+    #make sure there is an llzfile neifile and that they are the same length
+    
+    if not hasattr(w,'llzfile'):
+        return  
+    if not hasattr(w,'neifile'):
+        return    
+    if len(w.llzfile)!=len(w.neifile['h']):
+        return
+    
+    w.neifile['h']=w.llzfile[:,2]
+       
+    return
+ 
     
 def extract_llz():
     
